@@ -53,9 +53,11 @@ async function loadFromFirebase() {
   if (snap.exists()) {
     completedMissions =
       snap.data().completedMissions || [];
-
-    saveLocal();
+  } else {
+    completedMissions = [];
   }
+
+  saveLocal();
 }
 
 async function saveToFirebase() {
@@ -79,9 +81,7 @@ async function saveToFirebase() {
 function completeMission(missionId) {
   if (!completedMissions.includes(missionId)) {
     completedMissions.push(missionId);
-
     saveLocal();
-
     saveToFirebase();
   }
 }
@@ -367,6 +367,8 @@ function renderLogin() {
         baptism
       };
 
+      completedMissions = [];
+
       saveLocal();
 
       await loadFromFirebase();
@@ -376,7 +378,6 @@ function renderLogin() {
 }
 
 function renderHome() {
-
   const total =
     Object.keys(MISSIONS).length;
 
@@ -473,23 +474,22 @@ function renderHome() {
   document.getElementById("mapBtn").onclick =
     renderMap;
 
-document.getElementById("resetBtn").onclick = () => {
+  document.getElementById("resetBtn").onclick = () => {
+    if (confirm("로그인 화면으로 돌아갈까요?")) {
+      stopQrScanner();
 
-  if (confirm("로그인 화면으로 돌아갈까요?")) {
+      currentUser = null;
+      completedMissions = [];
 
-    stopQrScanner();
+      localStorage.removeItem("gamgokUser");
+      localStorage.removeItem("completedMissions");
 
-    currentUser = null;
-
-    localStorage.removeItem("gamgokUser");
-
-    renderLogin();
-  }
-};
+      renderLogin();
+    }
+  };
 }
 
 function renderMap() {
-
   app.innerHTML = `
     <div class="page">
 
@@ -518,7 +518,6 @@ function renderMap() {
 }
 
 function renderQrScanner() {
-
   app.innerHTML = `
     <div class="page">
 
@@ -546,9 +545,7 @@ function renderQrScanner() {
 
   document.getElementById("homeBtn").onclick =
     () => {
-
       stopQrScanner();
-
       renderHome();
     };
 
@@ -567,52 +564,53 @@ function renderQrScanner() {
       }
     },
     (decodedText) => {
-
       onScanSuccess(decodedText);
-
     },
     () => {}
-  );
+  ).catch(() => {
+    alert("카메라를 실행할 수 없습니다. 카메라 권한을 확인해주세요.");
+    renderHome();
+  });
 }
 
 function stopQrScanner() {
-
   if (qrScanner) {
-
     qrScanner.stop()
       .then(() => {
-
         qrScanner.clear();
-
         qrScanner = null;
       })
       .catch(() => {
-
         qrScanner = null;
       });
   }
 }
 
 function onScanSuccess(decodedText) {
-
   stopQrScanner();
 
   const qr =
     decodedText.trim();
 
   if (qr === "gamgok_mission_01") {
-
     renderPuzzleMission();
-
     return;
   }
 
   if (qr === "gamgok_mission_02") {
-
     renderMission02();
-
     return;
   }
+
+  try {
+    const url = new URL(qr);
+    const mission = url.searchParams.get("mission");
+
+    if (mission === "2") {
+      renderMission02();
+      return;
+    }
+  } catch (e) {}
 
   alert(
     "등록되지 않은 QR 코드입니다"
@@ -622,13 +620,11 @@ function onScanSuccess(decodedText) {
 }
 
 function renderPuzzleMission() {
-
   if (
     completedMissions.includes(
       "mission01"
     )
   ) {
-
     app.innerHTML = `
       <div class="page">
 
@@ -705,7 +701,6 @@ function renderPuzzleMission() {
     );
 
   function drawPuzzle() {
-
     puzzle.innerHTML = "";
 
     order.forEach(
@@ -713,7 +708,6 @@ function renderPuzzleMission() {
         pieceNumber,
         position
       ) => {
-
         const piece =
           document.createElement("div");
 
@@ -732,11 +726,9 @@ function renderPuzzleMission() {
           `-${x * 100}px -${y * 100}px`;
 
         piece.onclick = () => {
-
           if (
             selected === null
           ) {
-
             selected =
               position;
 
@@ -745,7 +737,6 @@ function renderPuzzleMission() {
             );
 
           } else {
-
             const temp =
               order[selected];
 
@@ -769,7 +760,6 @@ function renderPuzzleMission() {
   }
 
   function checkPuzzle() {
-
     const solved =
       order.every(
         (
@@ -780,13 +770,11 @@ function renderPuzzleMission() {
       );
 
     if (solved) {
-
       completeMission(
         "mission01"
       );
 
       setTimeout(() => {
-
         app.innerHTML = `
           <div class="page">
 
@@ -830,7 +818,6 @@ function renderPuzzleMission() {
 }
 
 function renderMission02() {
-
   app.innerHTML = `
     <div class="page">
 
@@ -885,7 +872,6 @@ function renderMission02() {
   document.getElementById(
     "submitBtn"
   ).onclick = () => {
-
     const answer =
       document.getElementById(
         "answerInput"
@@ -896,7 +882,6 @@ function renderMission02() {
     if (
       answer === "걱정"
     ) {
-
       completeMission(
         "mission02"
       );
@@ -931,7 +916,6 @@ function renderMission02() {
         renderHome;
 
     } else {
-
       alert(
         "다시 생각해보세요"
       );
@@ -945,19 +929,16 @@ function renderMission02() {
 }
 
 function shuffle(array) {
-
   let newArray =
     [...array];
 
   do {
-
     for (
       let i =
         newArray.length - 1;
       i > 0;
       i--
     ) {
-
       const j =
         Math.floor(
           Math.random() *
@@ -987,13 +968,11 @@ function shuffle(array) {
 }
 
 if (currentUser) {
-
   loadFromFirebase()
     .then(
       renderHome
     );
 
 } else {
-
   renderLogin();
 }
