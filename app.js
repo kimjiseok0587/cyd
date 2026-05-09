@@ -77,12 +77,7 @@ enterBtn.addEventListener("click", () => {
     return;
   }
 
-  userInfo = {
-    name,
-    baptismName,
-    team
-  };
-
+  userInfo = { name, baptismName, team };
   saveUserInfo(userInfo);
   showMainScreen();
 });
@@ -106,7 +101,6 @@ mapBtn.addEventListener("click", () => {
 
 resetBtn.addEventListener("click", () => {
   const ok = confirm("정말 처음부터 다시 시작할까요? 이름과 진행 상황이 모두 삭제됩니다.");
-
   if (!ok) return;
 
   stopScanner();
@@ -245,9 +239,6 @@ function renderPuzzlePieces() {
   puzzleOrder.forEach((pieceNumber, currentIndex) => {
     const piece = document.createElement("div");
 
-    piece.className = "puzzle-piece";
-    piece.dataset.index = currentIndex;
-
     const row = Math.floor(pieceNumber / 3);
     const col = pieceNumber % 3;
 
@@ -261,7 +252,6 @@ function renderPuzzlePieces() {
 
     if (selectedPiece === currentIndex) {
       piece.style.outline = "4px solid #ffcc00";
-      piece.style.zIndex = "2";
     }
 
     piece.addEventListener("click", () => {
@@ -354,11 +344,53 @@ function showPuzzleCompleteScreen() {
     </button>
   `;
 
-  document
-    .getElementById("finishPuzzleMissionBtn")
-    .addEventListener("click", () => {
-      completeMission(1);
-    });
+  document.getElementById("finishPuzzleMissionBtn").addEventListener("click", () => {
+    finishPuzzleMission();
+  });
+}
+
+function finishPuzzleMission() {
+  const missionId = "gamgok_mission_01";
+
+  if (!completedMissions.includes(missionId)) {
+    completedMissions.push(missionId);
+    saveProgress();
+  }
+
+  updateProgress();
+
+  const puzzleMessage = document.getElementById("puzzleMessage");
+
+  puzzleMessage.innerHTML = `
+    <div style="
+      margin-top:18px;
+      font-size:24px;
+      font-weight:900;
+      color:#8b5e34;
+    ">
+      1번 미션 완료!
+    </div>
+
+    <p style="
+      margin-top:8px;
+      color:#5a3d21;
+      line-height:1.6;
+    ">
+      완성된 사진을 확인했습니다.<br>
+      다음 장소로 이동하세요.
+    </p>
+
+    <button
+      class="main-button back-button"
+      id="backHomeAfterPuzzleBtn"
+    >
+      메인으로 돌아가기
+    </button>
+  `;
+
+  document.getElementById("backHomeAfterPuzzleBtn").addEventListener("click", () => {
+    showMainScreen();
+  });
 }
 
 function isPuzzleSolved() {
@@ -368,8 +400,8 @@ function isPuzzleSolved() {
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const randomIndex = Math.floor(Math.random() * (i + 1));
-
     const temp = array[i];
+
     array[i] = array[randomIndex];
     array[randomIndex] = temp;
   }
