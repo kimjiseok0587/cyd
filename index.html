@@ -3,111 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>스탬프 투어</title>
-
   <link rel="stylesheet" href="style.css" />
-
-  <!-- QR 스캔 라이브러리 -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script type="module" src="./app.js"></script>
 <body>
-
-  <!-- 로그인 화면 -->
-  <div class="container" id="loginBox">
-    <div class="card">
-
-      <h1 class="title">스탬프 투어</h1>
-
-      <p class="subtitle">
-        이름과 세례명을 입력하세요
-      </p>
-
-      <input type="text" id="name" placeholder="이름" />
-      <input type="text" id="baptismName" placeholder="세례명" />
-      <input type="text" id="team" placeholder="팀 이름" />
-
-      <button id="enterBtn" class="main-button qr-button">
-        시작하기
-      </button>
-
-    </div>
-  </div>
-
-  <!-- 메인 화면 -->
-  <div class="container" id="mainBox" style="display:none;">
-    <div class="card">
-
-      <h1 class="title">스탬프 투어</h1>
-
-      <h2 id="welcomeText"></h2>
-
-      <!-- 진행 현황 -->
-      <div class="progress-box">
-
-        <div class="progress-label">
-          현재 진행 상황
-        </div>
-
-        <div class="progress-number" id="missionCount">
-          0 / 20
-        </div>
-
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-
-      </div>
-
-      <p id="mainGuide">
-        지도를 보고 QR코드를 찾아 미션을 수행하세요.
-      </p>
-
-      <!-- QR 버튼 -->
-      <button id="scanBtn" class="main-button qr-button">
-        QR 스캔하기
-      </button>
-
-      <!-- 지도 버튼 -->
-      <button id="mapBtn" class="main-button map-button">
-        지도 보기
-      </button>
-
-      <!-- QR 스캔 영역 -->
-      <div id="reader" style="display:none;"></div>
-
-      <!-- 지도 영역 -->
-      <div id="mapSection" style="display:none;">
-
-        <img src="map.png" class="map-img" />
-
-      </div>
-
-      <!-- 퍼즐 미션 화면 -->
-      <div id="puzzleSection" style="display:none;">
-
-        <h2>1번 미션: 퍼즐 맞추기</h2>
-
-        <p>
-          사진 조각을 눌러 서로 바꾸며 퍼즐을 완성하세요.
-        </p>
-
-        <div id="puzzleBoard"></div>
-
-        <p id="puzzleMessage"></p>
-
-      </div>
-
-      <button id="resetBtn" class="main-button back-button">
-        처음부터 다시하기
-      </button>
-
-    </div>
-  </div>
-
-  <script type="module" src="app.js"></script>
-
+  <div id="app"></div>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
