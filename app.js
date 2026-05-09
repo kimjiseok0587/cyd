@@ -1,39 +1,5 @@
-import { db } from "./firebase.js";
+const TOTAL_MISSIONS = 20;
 
-import {
-  collection,
-  addDoc,
-  doc,
-  updateDoc,
-  arrayUnion,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// 전체 미션 목록
-const missions = [
-  {
-    id: "puzzle",
-    title: "1번 미션: 퍼즐 맞추기"
-  },
-  {
-    id: "quiz",
-    title: "2번 미션: 퀴즈 미션"
-  },
-  {
-    id: "photo",
-    title: "3번 미션: 사진 미션"
-  },
-  {
-    id: "password",
-    title: "4번 미션: 암호 미션"
-  },
-  {
-    id: "final",
-    title: "5번 미션: 최종 미션"
-  }
-];
-
-// HTML 요소 가져오기
 const loginBox = document.getElementById("loginBox");
 const mainBox = document.getElementById("mainBox");
 
@@ -43,29 +9,63 @@ const teamInput = document.getElementById("team");
 
 const enterBtn = document.getElementById("enterBtn");
 const welcomeText = document.getElementById("welcomeText");
+const missionCount = document.getElementById("missionCount");
+const progressFill = document.getElementById("progressFill");
+
+const scanBtn = document.getElementById("scanBtn");
+const mapBtn = document.getElementById("mapBtn");
 const resetBtn = document.getElementById("resetBtn");
 
-const missionCount = document.getElementById("missionCount");
-const stampBoard = document.getElementById("stampBoard");
-const mainGuide = document.getElementById("mainGuide");
-
+const reader = document.getElementById("reader");
+const mapSection = document.getElementById("mapSection");
 const puzzleSection = document.getElementById("puzzleSection");
-const puzzleBoard = document.getElementById("puzzleBoard");
 const puzzleMessage = document.getElementById("puzzleMessage");
 
-let selectedPiece = null;
-let currentUser = null;
+let html5QrCode = null;
 
-// 저장된 참가자 정보 확인
-const savedUser = localStorage.getItem("missionUser");
+let userInfo = JSON.parse(localStorage.getItem("userInfo")) || null;
+let completedMissions = JSON.parse(localStorage.getItem("completedMissions")) || [];
 
-if (savedUser) {
-  currentUser = JSON.parse(savedUser);
-  showMain(currentUser);
+function saveUserInfo(info) {
+  localStorage.setItem("userInfo", JSON.stringify(info));
 }
 
-// 시작하기 버튼 클릭
-enterBtn.addEventListener("click", async () => {
+function saveProgress() {
+  localStorage.setItem("completedMissions", JSON.stringify(completedMissions));
+}
+
+function updateProgress() {
+  const completedCount = completedMissions.length;
+  const percent = Math.round((completedCount / TOTAL_MISSIONS) * 100);
+
+  missionCount.textContent = `${completedCount} / ${TOTAL_MISSIONS}`;
+  progressFill.style.width = `${percent}%`;
+}
+
+function showMainScreen() {
+  loginBox.style.display = "none";
+  mainBox.style.display = "flex";
+
+  if (userInfo) {
+    welcomeText.textContent = `${userInfo.name} ${userInfo.baptismName}님, 환영합니다`;
+  }
+
+  hideAllSections();
+  updateProgress();
+}
+
+function showLoginScreen() {
+  loginBox.style.display = "flex";
+  mainBox.style.display = "none";
+}
+
+function hideAllSections() {
+  reader.style.display = "none";
+  mapSection.style.display = "none";
+  puzzleSection.style.display = "none";
+}
+
+enterBtn.addEventListener("click", () => {
   const name = nameInput.value.trim();
   const baptismName = baptismNameInput.value.trim();
   const team = teamInput.value.trim();
@@ -75,226 +75,143 @@ enterBtn.addEventListener("click", async () => {
     return;
   }
 
-  try {
-    const docRef = await addDoc(collection(db, "participants"), {
-      name: name,
-      baptismName: baptismName,
-      team: team,
-      completedMissions: [],
-      createdAt: serverTimestamp()
-    });
+  userInfo = {
+    name,
+    baptismName,
+    team
+  };
 
-    const user = {
-      id: docRef.id,
-      name: name,
-      baptismName: baptismName,
-      team: team,
-      completedMissions: []
-    };
-
-    currentUser = user;
-
-    localStorage.setItem("missionUser", JSON.stringify(user));
-
-    showMain(user);
-
-  } catch (error) {
-    console.error(error);
-    alert("저장 중 오류가 발생했습니다.");
-  }
+  saveUserInfo(userInfo);
+  showMainScreen();
 });
 
-// 메인 화면 보여주기
-function showMain(user) {
-  loginBox.style.display = "none";
-  mainBox.style.display = "block";
+scanBtn.addEventListener("click", () => {
+  hideAllSections();
+  reader.style.display = "block";
+  startQRScanner();
+});
 
-  welcomeText.textContent =
-    `${user.team}팀 ${user.name} ${user.baptismName}님 환영합니다!`;
+mapBtn.addEventListener("click", () => {
+  stopScanner();
+  hideAllSections();
 
-  renderMissionStatus(user);
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const mission = urlParams.get("mission");
-
-  if (mission === "puzzle") {
-    showPuzzleMission();
+  if (mapSection.style.display === "block") {
+    mapSection.style.display = "none";
   } else {
-    hideAllMissions();
-    mainGuide.textContent = "QR코드를 찾아 미션을 수행하세요.";
+    mapSection.style.display = "block";
   }
-}
-
-// 미션 현황판 표시
-function renderMissionStatus(user) {
-  const completed = user.completedMissions || [];
-  const totalCount = missions.length;
-  const completedCount = completed.length;
-  const remainingCount = totalCount - completedCount;
-
-  missionCount.textContent =
-    `전체 미션 ${totalCount}개 / 완료 ${completedCount}개 / 남은 미션 ${remainingCount}개`;
-
-  stampBoard.innerHTML = "";
-
-  missions.forEach((mission) => {
-    const item = document.createElement("div");
-    item.classList.add("stamp-item");
-
-    if (completed.includes(mission.id)) {
-      item.classList.add("done");
-      item.textContent = `✅ 완료 - ${mission.title}`;
-    } else {
-      item.textContent = `⬜ 미완료 - ${mission.title}`;
-    }
-
-    stampBoard.appendChild(item);
-  });
-}
-
-// 모든 미션 숨기기
-function hideAllMissions() {
-  puzzleSection.style.display = "none";
-}
-
-// 퍼즐 미션 보여주기
-function showPuzzleMission() {
-  mainGuide.textContent = "1번 미션 장소에 도착했습니다!";
-  puzzleSection.style.display = "block";
-
-  if (currentUser.completedMissions.includes("puzzle")) {
-    puzzleBoard.style.display = "none";
-    puzzleMessage.textContent = "✅ 이미 완료한 미션입니다!";
-    return;
-  }
-
-  puzzleBoard.style.display = "grid";
-  puzzleMessage.textContent = "";
-  createPuzzle();
-}
-
-// 퍼즐 만들기
-function createPuzzle() {
-  puzzleBoard.innerHTML = "";
-  puzzleMessage.textContent = "";
-  selectedPiece = null;
-
-  let pieces = [];
-
-  for (let i = 0; i < 9; i++) {
-    pieces.push(i);
-  }
-
-  pieces = shuffleArray(pieces);
-
-  pieces.forEach((pieceNumber) => {
-    const piece = document.createElement("div");
-
-    piece.classList.add("puzzle-piece");
-
-    piece.dataset.correct = pieceNumber;
-
-    const row = Math.floor(pieceNumber / 3);
-    const col = pieceNumber % 3;
-
-    piece.style.backgroundPosition = `-${col * 100}px -${row * 100}px`;
-
-    piece.addEventListener("click", () => {
-      selectPiece(piece);
-    });
-
-    puzzleBoard.appendChild(piece);
-  });
-}
-
-// 퍼즐 조각 선택
-function selectPiece(piece) {
-  if (!selectedPiece) {
-    selectedPiece = piece;
-    piece.style.outline = "4px solid red";
-    return;
-  }
-
-  if (selectedPiece === piece) {
-    selectedPiece.style.outline = "none";
-    selectedPiece = null;
-    return;
-  }
-
-  swapPieces(selectedPiece, piece);
-
-  selectedPiece.style.outline = "none";
-  selectedPiece = null;
-
-  checkPuzzleComplete();
-}
-
-// 퍼즐 조각 교환
-function swapPieces(piece1, piece2) {
-  const tempBackground = piece1.style.backgroundPosition;
-  const tempCorrect = piece1.dataset.correct;
-
-  piece1.style.backgroundPosition = piece2.style.backgroundPosition;
-  piece1.dataset.correct = piece2.dataset.correct;
-
-  piece2.style.backgroundPosition = tempBackground;
-  piece2.dataset.correct = tempCorrect;
-}
-
-// 퍼즐 완성 확인
-function checkPuzzleComplete() {
-  const pieces = document.querySelectorAll(".puzzle-piece");
-
-  let complete = true;
-
-  pieces.forEach((piece, index) => {
-    if (Number(piece.dataset.correct) !== index) {
-      complete = false;
-    }
-  });
-
-  if (complete) {
-    completeMission("puzzle");
-  }
-}
-
-// 미션 완료 처리
-async function completeMission(missionId) {
-  if (currentUser.completedMissions.includes(missionId)) {
-    return;
-  }
-
-  currentUser.completedMissions.push(missionId);
-
-  localStorage.setItem("missionUser", JSON.stringify(currentUser));
-
-  renderMissionStatus(currentUser);
-
-  puzzleMessage.textContent = "🎉 퍼즐 성공! 1번 미션 완료 도장을 받았습니다!";
-  puzzleBoard.style.display = "none";
-
-  try {
-    const userRef = doc(db, "participants", currentUser.id);
-
-    await updateDoc(userRef, {
-      completedMissions: arrayUnion(missionId)
-    });
-
-  } catch (error) {
-    console.error(error);
-    alert("미션 완료 저장 중 오류가 발생했습니다.");
-  }
-}
-
-// 배열 섞기
-function shuffleArray(array) {
-  return array.sort(() => Math.random() - 0.5);
-}
-
-// 초기화 버튼
-resetBtn.addEventListener("click", () => {
-  localStorage.removeItem("missionUser");
-
-  const cleanUrl = window.location.origin + window.location.pathname;
-  window.location.href = cleanUrl;
 });
+
+resetBtn.addEventListener("click", () => {
+  const ok = confirm("정말 처음부터 다시 시작할까요? 이름과 진행 상황이 모두 삭제됩니다.");
+
+  if (!ok) return;
+
+  stopScanner();
+
+  localStorage.removeItem("userInfo");
+  localStorage.removeItem("completedMissions");
+
+  userInfo = null;
+  completedMissions = [];
+
+  nameInput.value = "";
+  baptismNameInput.value = "";
+  teamInput.value = "";
+
+  showLoginScreen();
+});
+
+function startQRScanner() {
+  if (html5QrCode) {
+    stopScanner();
+  }
+
+  html5QrCode = new Html5Qrcode("reader");
+
+  html5QrCode.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+    },
+    (decodedText) => {
+      stopScanner();
+      handleQRCode(decodedText);
+    },
+    () => {}
+  ).catch(() => {
+    alert("카메라 권한을 허용해야 QR 스캔을 사용할 수 있습니다.");
+    hideAllSections();
+  });
+}
+
+function stopScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().catch(() => {});
+    html5QrCode = null;
+  }
+}
+
+function handleQRCode(decodedText) {
+  hideAllSections();
+
+  if (decodedText.includes("mission1")) {
+    showMission1();
+    return;
+  }
+
+  if (decodedText.includes("mission2")) {
+    completeMission(2);
+    return;
+  }
+
+  if (decodedText.includes("mission3")) {
+    completeMission(3);
+    return;
+  }
+
+  alert("등록되지 않은 QR코드입니다.");
+}
+
+function showMission1() {
+  puzzleSection.style.display = "block";
+  puzzleMessage.textContent = "";
+
+  puzzleSection.innerHTML = `
+    <h2>1번 미션: 퍼즐 맞추기</h2>
+    <p>이곳에 기존 9조각 퍼즐 게임을 연결할 예정입니다.</p>
+
+    <button class="main-button qr-button" id="completeMission1Btn">
+      미션 완료하기
+    </button>
+  `;
+
+  document.getElementById("completeMission1Btn").addEventListener("click", () => {
+    completeMission(1);
+  });
+}
+
+function completeMission(num) {
+  const missionId = `mission${num}`;
+
+  if (!completedMissions.includes(missionId)) {
+    completedMissions.push(missionId);
+    saveProgress();
+  }
+
+  updateProgress();
+
+  alert(`${num}번 미션 완료!`);
+
+  hideAllSections();
+}
+
+if (userInfo) {
+  showMainScreen();
+} else {
+  showLoginScreen();
+}
