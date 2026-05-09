@@ -1,6 +1,8 @@
 const app = document.getElementById("app");
 
 let userName = localStorage.getItem("userName") || "";
+let userSaintName = localStorage.getItem("userSaintName") || "";
+
 let progress = JSON.parse(localStorage.getItem("progress")) || {
   mission1: false,
   mission2: false,
@@ -18,9 +20,22 @@ function renderLogin() {
   app.innerHTML = `
     <div style="padding:30px; text-align:center; font-family:sans-serif;">
       <h1>청소년대회</h1>
-      <p>이름을 입력하고 시작하세요.</p>
+      <p>이름과 세례명을 입력하세요.</p>
 
       <input id="nameInput" placeholder="이름 입력" style="
+        padding:15px;
+        font-size:20px;
+        border-radius:12px;
+        border:1px solid #ccc;
+        text-align:center;
+        width:80%;
+        max-width:300px;
+        margin-bottom:15px;
+      ">
+
+      <br>
+
+      <input id="saintInput" placeholder="세례명 입력" style="
         padding:15px;
         font-size:20px;
         border-radius:12px;
@@ -47,15 +62,20 @@ function renderLogin() {
 }
 
 window.login = function () {
-  const input = document.getElementById("nameInput").value.trim();
+  const name = document.getElementById("nameInput").value.trim();
+  const saint = document.getElementById("saintInput").value.trim();
 
-  if (!input) {
-    alert("이름을 입력해주세요.");
+  if (!name || !saint) {
+    alert("이름과 세례명을 입력해주세요.");
     return;
   }
 
-  userName = input;
+  userName = name;
+  userSaintName = saint;
+
   localStorage.setItem("userName", userName);
+  localStorage.setItem("userSaintName", userSaintName);
+
   renderHome();
 };
 
@@ -63,7 +83,7 @@ function renderHome() {
   app.innerHTML = `
     <div style="padding:25px; text-align:center; font-family:sans-serif;">
       <h1>청소년대회</h1>
-      <p>${userName}님 환영합니다</p>
+      <p>${userName} ${userSaintName}님 환영합니다</p>
 
       <div style="
         background:#f2f2f2;
@@ -130,7 +150,7 @@ function renderHome() {
       </button>
     </div>
   `;
-};
+}
 
 window.startQR = function () {
   app.innerHTML = `
@@ -229,6 +249,7 @@ window.completeMission1 = function () {
     <div style="padding:30px; text-align:center; font-family:sans-serif;">
       <h1>미션 완료!</h1>
       <p>미션 1을 완료했습니다.</p>
+
       <button onclick="renderHome()" style="
         padding:15px 30px;
         font-size:20px;
@@ -296,6 +317,7 @@ window.checkMission2 = function () {
       <div style="padding:30px; text-align:center; font-family:sans-serif;">
         <h1>미션 완료!</h1>
         <p>정답입니다.</p>
+
         <button onclick="renderHome()" style="
           padding:15px 30px;
           font-size:20px;
@@ -321,9 +343,12 @@ window.resetGame = function () {
   if (!confirm("정말 처음부터 다시 시작할까요?")) return;
 
   localStorage.removeItem("userName");
+  localStorage.removeItem("userSaintName");
   localStorage.removeItem("progress");
 
   userName = "";
+  userSaintName = "";
+
   progress = {
     mission1: false,
     mission2: false,
@@ -334,7 +359,7 @@ window.resetGame = function () {
 
 window.renderHome = renderHome;
 
-if (userName) {
+if (userName && userSaintName) {
   renderHome();
 } else {
   renderLogin();
