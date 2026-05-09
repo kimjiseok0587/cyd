@@ -200,6 +200,18 @@ function handleQR(text) {
     return;
   }
 
+  if (
+    text.includes("mission2") ||
+    text.includes("미션2") ||
+    text.includes("m2")
+  ) {
+    renderMission2();
+    return;
+  }
+
+  alert("등록되지 않은 QR입니다.");
+  renderHome();
+}
 
 function renderMission1() {
   if (progress.mission1) {
