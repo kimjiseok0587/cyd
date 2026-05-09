@@ -19,46 +19,36 @@ const QR_CODES = {
 let currentUser = null;
 let completedMissions = [];
 
-// -----------------------------
-// 참가자 ID 만들기
-// 이름 + 세례명 기준
-// -----------------------------
-function makeUserId(name, baptism) {
+// 참가자 구분용 ID
+function makePlayerId(name, baptism) {
   return `${name.trim()}_${baptism.trim()}`;
 }
 
-function saveLocalUser(name, baptism) {
+// 로그인 정보 저장
+function saveLoginInfo(name, baptism) {
   localStorage.setItem("playerName", name);
   localStorage.setItem("playerBaptism", baptism);
-  localStorage.setItem("playerId", makeUserId(name, baptism));
+  localStorage.setItem("playerId", makePlayerId(name, baptism));
 }
 
-function loadLocalUser() {
+// 로그인 정보 불러오기
+function loadLoginInfo() {
   const name = localStorage.getItem("playerName");
   const baptism = localStorage.getItem("playerBaptism");
   const playerId = localStorage.getItem("playerId");
 
   if (!name || !baptism || !playerId) return null;
 
-  return {
-    name,
-    baptism,
-    playerId
-  };
+  return { name, baptism, playerId };
 }
 
-// -----------------------------
-// Firestore 진행률 불러오기
-// -----------------------------
+// 진행률 불러오기
 async function loadProgress() {
-  if (!currentUser) return;
-
   const ref = doc(db, "participants", currentUser.playerId);
   const snap = await getDoc(ref);
 
   if (snap.exists()) {
-    const data = snap.data();
-    completedMissions = data.completedMissions || [];
+    completedMissions = snap.data().completedMissions || [];
   } else {
     completedMissions = [];
 
@@ -72,12 +62,8 @@ async function loadProgress() {
   }
 }
 
-// -----------------------------
-// Firestore 진행률 저장
-// -----------------------------
+// 진행률 저장
 async function saveProgress() {
-  if (!currentUser) return;
-
   const ref = doc(db, "participants", currentUser.playerId);
 
   await updateDoc(ref, {
@@ -86,22 +72,9 @@ async function saveProgress() {
   });
 }
 
-function isCompleted(missionId) {
-  return completedMissions.includes(missionId);
-}
-
-async function completeMission(missionId) {
-  if (!completedMissions.includes(missionId)) {
-    completedMissions.push(missionId);
-    await saveProgress();
-  }
-
-  showMissionComplete(missionId);
-}
-
-// -----------------------------
+// --------------------
 // 로그인 화면
-// -----------------------------
+// --------------------
 function showLogin() {
   app.innerHTML = `
     <div class="screen login-screen">
@@ -123,12 +96,12 @@ function showLogin() {
       return;
     }
 
-    saveLocalUser(name, baptism);
+    saveLoginInfo(name, baptism);
 
     currentUser = {
       name,
       baptism,
-      playerId: makeUserId(name, baptism)
+      playerId: makePlayerId(name, baptism)
     };
 
     await loadProgress();
@@ -136,20 +109,25 @@ function showLogin() {
   });
 }
 
-// -----------------------------
+// --------------------
 // 메인 화면
-// -----------------------------
+// 기존 양식 유지
+// --------------------
 function showMain() {
   const percent = Math.round((completedMissions.length / TOTAL_MISSIONS) * 100);
 
   app.innerHTML = `
     <div class="screen main-screen">
-      <h2>${currentUser.name} ${currentUser.baptism}</h2>
+      <h1>청소년대회<br>스탬프 투어</h1>
+
+      <div class="user-box">
+        <p>${currentUser.name} ${currentUser.baptism}</p>
+      </div>
 
       <div class="progress-box">
-        <p>진행률</p>
-        <h1>${percent}%</h1>
-        <p>${completedMissions.length} / ${TOTAL_MISSIONS} 완료</p>
+        <p>나의 진행률</p>
+        <h2>${percent}%</h2>
+        <p>${completedMissions.length} / ${TOTAL_MISSIONS}</p>
       </div>
 
       <button id="scanBtn">QR 코드 찍기</button>
@@ -163,7 +141,7 @@ function showMain() {
   document.getElementById("scanBtn").addEventListener("click", startQrScanner);
 
   document.getElementById("mapBtn").addEventListener("click", () => {
-    alert("지도 기능은 나중에 연결하면 됩니다.");
+    alert("지도는 나중에 연결하면 됩니다.");
   });
 
   document.getElementById("homeBtn").addEventListener("click", () => {
@@ -178,9 +156,9 @@ function showMain() {
   });
 }
 
-// -----------------------------
+// --------------------
 // QR 스캔
-// -----------------------------
+// --------------------
 function startQrScanner() {
   const qrBox = document.getElementById("qr-reader");
   qrBox.style.display = "block";
@@ -195,13 +173,13 @@ function startQrScanner() {
         return;
       }
 
-      const backCamera =
-        cameras.find((camera) =>
-          camera.label.toLowerCase().includes("back")
+      const camera =
+        cameras.find((cam) =>
+          cam.label.toLowerCase().includes("back")
         ) || cameras[cameras.length - 1];
 
       html5QrCode.start(
-        backCamera.id,
+        camera.id,
         {
           fps: 10,
           qrbox: 250
@@ -209,7 +187,7 @@ function startQrScanner() {
         async (decodedText) => {
           await html5QrCode.stop();
           qrBox.style.display = "none";
-          handleQrResult(decodedText);
+          handleQr(decodedText);
         },
         () => {}
       );
@@ -219,7 +197,7 @@ function startQrScanner() {
     });
 }
 
-function handleQrResult(text) {
+function handleQr(text) {
   if (text === QR_CODES.mission1) {
     showMission1();
     return;
@@ -233,9 +211,25 @@ function handleQrResult(text) {
   alert("등록되지 않은 QR 코드입니다.");
 }
 
-// -----------------------------
+// --------------------
+// 미션 완료 체크
+// --------------------
+function isCompleted(missionId) {
+  return completedMissions.includes(missionId);
+}
+
+async function completeMission(missionId) {
+  if (!completedMissions.includes(missionId)) {
+    completedMissions.push(missionId);
+    await saveProgress();
+  }
+
+  showCompleteScreen(missionId);
+}
+
+// --------------------
 // 미션1 퍼즐
-// -----------------------------
+// --------------------
 function showMission1() {
   if (isCompleted("mission1")) {
     alert("이미 완료한 미션입니다.");
@@ -284,13 +278,14 @@ function createPuzzle() {
         selected = piece;
         piece.classList.add("selected");
       } else {
-        const temp = selected.dataset.number;
-        selected.dataset.number = piece.dataset.number;
-        piece.dataset.number = temp;
+        const tempNumber = selected.dataset.number;
+        const tempPosition = selected.style.backgroundPosition;
 
-        const tempBg = selected.style.backgroundPosition;
+        selected.dataset.number = piece.dataset.number;
         selected.style.backgroundPosition = piece.style.backgroundPosition;
-        piece.style.backgroundPosition = tempBg;
+
+        piece.dataset.number = tempNumber;
+        piece.style.backgroundPosition = tempPosition;
 
         selected.classList.remove("selected");
         selected = null;
@@ -311,7 +306,7 @@ async function checkPuzzleComplete() {
   });
 
   if (complete) {
-    setTimeout(async () => {
+    setTimeout(() => {
       app.innerHTML = `
         <div class="screen mission-screen">
           <h2>퍼즐 완성!</h2>
@@ -327,9 +322,9 @@ async function checkPuzzleComplete() {
   }
 }
 
-// -----------------------------
+// --------------------
 // 미션2 빈칸 채우기
-// -----------------------------
+// --------------------
 function showMission2() {
   if (isCompleted("mission2")) {
     alert("이미 완료한 미션입니다.");
@@ -362,14 +357,14 @@ function showMission2() {
   document.getElementById("backBtn").addEventListener("click", showMain);
 }
 
-// -----------------------------
-// 미션 완료 화면
-// -----------------------------
-function showMissionComplete(missionId) {
+// --------------------
+// 완료 화면
+// --------------------
+function showCompleteScreen(missionId) {
   app.innerHTML = `
     <div class="screen complete-screen">
       <h1>도장 완료!</h1>
-      <p>${missionId} 미션을 완료했습니다.</p>
+      <p>${missionId} 완료</p>
 
       <button id="mainBtn">메인으로 돌아가기</button>
     </div>
@@ -378,11 +373,11 @@ function showMissionComplete(missionId) {
   document.getElementById("mainBtn").addEventListener("click", showMain);
 }
 
-// -----------------------------
-// 시작
-// -----------------------------
+// --------------------
+// 앱 시작
+// --------------------
 async function startApp() {
-  const savedUser = loadLocalUser();
+  const savedUser = loadLoginInfo();
 
   if (savedUser) {
     currentUser = savedUser;
