@@ -293,11 +293,72 @@ function handlePieceClick(index) {
   renderPuzzlePieces();
 
   if (isPuzzleSolved()) {
-    const puzzleMessage = document.getElementById("puzzleMessage");
-
-    puzzleMessage.textContent = "퍼즐 완성! 1번 미션 완료!";
-    completeMission(1);
+    showPuzzleCompleteScreen();
   }
+}
+
+function showPuzzleCompleteScreen() {
+  const puzzleBoard = document.getElementById("puzzleBoard");
+  const puzzleMessage = document.getElementById("puzzleMessage");
+  const shufflePuzzleBtn = document.getElementById("shufflePuzzleBtn");
+
+  if (shufflePuzzleBtn) {
+    shufflePuzzleBtn.style.display = "none";
+  }
+
+  puzzleBoard.style.display = "block";
+  puzzleBoard.style.width = "300px";
+  puzzleBoard.style.height = "auto";
+  puzzleBoard.style.margin = "18px auto";
+  puzzleBoard.style.border = "none";
+  puzzleBoard.style.background = "transparent";
+
+  puzzleBoard.innerHTML = `
+    <img 
+      src="puzzle.png"
+      alt="완성된 퍼즐"
+      style="
+        width:100%;
+        border-radius:18px;
+        border:4px solid #8b5e34;
+        box-shadow:0 8px 18px rgba(60, 38, 15, 0.25);
+      "
+    />
+  `;
+
+  puzzleMessage.innerHTML = `
+    <div style="
+      margin-top:18px;
+      font-size:24px;
+      font-weight:900;
+      color:#8b5e34;
+    ">
+      퍼즐 완성!
+    </div>
+
+    <p style="
+      margin-top:8px;
+      color:#5a3d21;
+      line-height:1.6;
+    ">
+      완성된 사진을 확인했습니다.<br>
+      아래 버튼을 누르면 미션이 완료됩니다.
+    </p>
+
+    <button
+      id="finishPuzzleMissionBtn"
+      class="main-button qr-button"
+      style="margin-top:18px;"
+    >
+      미션 완료하기
+    </button>
+  `;
+
+  document
+    .getElementById("finishPuzzleMissionBtn")
+    .addEventListener("click", () => {
+      completeMission(1);
+    });
 }
 
 function isPuzzleSolved() {
