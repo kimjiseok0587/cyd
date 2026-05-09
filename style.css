@@ -167,3 +167,7 @@ input:focus {
 .hidden {
   display: none;
 }
+
+#missionList {
+  display: none;
+}
