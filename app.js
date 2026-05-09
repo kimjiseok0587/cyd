@@ -473,22 +473,14 @@ function renderHome() {
   document.getElementById("mapBtn").onclick =
     renderMap;
 
-  document.getElementById("resetBtn").onclick =
-    () => {
+  document.getElementById("resetBtn").onclick = () => {
+  if (confirm("로그인 화면으로 돌아갈까요?")) {
+    currentUser = null;
+    localStorage.removeItem("gamgokUser");
 
-      if (
-        confirm("처음부터 다시 시작할까요?")
-      ) {
-
-        completedMissions = [];
-
-        saveLocal();
-
-        saveToFirebase();
-
-        renderHome();
-      }
-    };
+    renderLogin();
+  }
+};
 }
 
 function renderMap() {
