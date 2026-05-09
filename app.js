@@ -1,5 +1,10 @@
-// app.js 전체 교체용
-// 이름/세례명 입력 → 미션 여권 → QR 스캔 → 미션 완료 → Firebase 저장
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const missions = [
   {
@@ -14,22 +19,25 @@ const missions = [
     title: "미션 2",
     name: "빈칸 채우기",
     type: "blank",
-    answer: "걱정",
     question: "아무것도 ____하지 마십시오.",
+    answer: "걱정",
     qrValues: ["2", "mission2", "MISSION_2"],
   },
 ];
 
+const app = document.getElementById("app");
+
 let participant = JSON.parse(localStorage.getItem("participant") || "null");
 let completedMissions = JSON.parse(localStorage.getItem("completedMissions") || "[]");
 let currentMission = null;
+let currentQrScanner = null;
+let puzzleOrder = [];
 
-const app = document.getElementById("app");
-
-function saveParticipant(name, baptism) {
+function saveParticipant(name, baptism, team) {
   participant = {
     name,
     baptism,
+    team,
     startedAt: new Date().toISOString(),
   };
 
@@ -48,64 +56,44 @@ async function saveToFirebase(missionId) {
   if (!participant) return;
 
   try {
-    if (typeof db === "undefined") {
-      console.warn("Firebase db가 연결되지 않았습니다.");
-      return;
-    }
-
-    await db.collection("participants").add({
+    await addDoc(collection(db, "participants"), {
       name: participant.name,
       baptism: participant.baptism,
-      missionId: missionId,
-      completedAt: new Date().toISOString(),
+      team: participant.team,
+      missionId,
+      completedAt: serverTimestamp(),
     });
 
     console.log("Firebase 저장 완료");
   } catch (error) {
     console.error("Firebase 저장 오류:", error);
-    alert("미션은 완료됐지만, 데이터 저장 중 오류가 발생했습니다.");
-  }
-}
-
-async function completeMission(id) {
-  if (!completedMissions.includes(id)) {
-    completedMissions.push(id);
-    saveProgress();
-    await saveToFirebase(id);
-  }
-
-  showCompleteScreen(id);
-}
-
-function resetProgress() {
-  if (confirm("정말 처음부터 다시 시작할까요? 이름/세례명과 미션 기록이 이 기기에서 삭제됩니다.")) {
-    participant = null;
-    completedMissions = [];
-    localStorage.removeItem("participant");
-    localStorage.removeItem("completedMissions");
-    renderStart();
+    alert("미션은 완료됐지만 데이터 저장 중 오류가 발생했습니다.");
   }
 }
 
 function renderStart() {
   app.innerHTML = `
     <div class="container">
-      <h1>청소년 대회 미션 여권</h1>
-      <p class="subtitle">이름과 세례명을 입력하고 시작하세요.</p>
+      <div class="card">
+        <h1 class="title">스탬프 투어</h1>
+        <p class="subtitle">이름과 세례명을 입력하세요.</p>
 
-      <div class="mission-box">
-        <input id="nameInput" class="answer-input" placeholder="이름" />
-        <input id="baptismInput" class="answer-input" placeholder="세례명" />
+        <input type="text" id="nameInput" placeholder="이름" />
+        <input type="text" id="baptismInput" placeholder="세례명" />
+        <input type="text" id="teamInput" placeholder="팀 이름" />
 
-        <button class="main-btn" onclick="startGame()">시작하기</button>
+        <button id="startBtn" class="main-button qr-button">시작하기</button>
       </div>
     </div>
   `;
+
+  document.getElementById("startBtn").addEventListener("click", startGame);
 }
 
 function startGame() {
   const name = document.getElementById("nameInput").value.trim();
   const baptism = document.getElementById("baptismInput").value.trim();
+  const team = document.getElementById("teamInput").value.trim();
 
   if (!name) {
     alert("이름을 입력해주세요.");
@@ -117,7 +105,12 @@ function startGame() {
     return;
   }
 
-  saveParticipant(name, baptism);
+  if (!team) {
+    alert("팀 이름을 입력해주세요.");
+    return;
+  }
+
+  saveParticipant(name, baptism, team);
   renderHome();
 }
 
@@ -127,43 +120,73 @@ function renderHome() {
     return;
   }
 
+  const percent = (completedMissions.length / missions.length) * 100;
+
   app.innerHTML = `
     <div class="container">
-      <h1>청소년 대회 미션 여권</h1>
-      <p class="subtitle">${participant.name} ${participant.baptism}</p>
+      <div class="card">
+        <h1 class="title">스탬프 투어</h1>
+        <h2>${participant.name} ${participant.baptism}</h2>
+        <p class="subtitle">${participant.team} 팀</p>
 
-      <div class="progress-box">
-        <div class="progress-text">
-          완료한 미션 ${completedMissions.length} / ${missions.length}
+        <div class="progress-box">
+          <div class="progress-label">현재 진행 상황</div>
+          <div class="progress-number">${completedMissions.length} / ${missions.length}</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${percent}%"></div>
+          </div>
         </div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width:${(completedMissions.length / missions.length) * 100}%"></div>
-        </div>
-      </div>
 
-      <button class="main-btn" onclick="startQRScan()">QR 스캔하기</button>
-      <button class="sub-btn" onclick="alert('지도 이미지는 나중에 연결하면 됩니다.')">지도 보기</button>
+        <p>QR코드를 찾아 미션을 수행하세요.</p>
 
-      <div class="stamp-list">
-        ${missions
-          .map(
-            (m) => `
+        <button id="scanBtn" class="main-button qr-button">QR 스캔하기</button>
+        <button id="mapBtn" class="main-button map-button">지도 보기</button>
+
+        <div class="stamp-list">
+          ${missions.map(m => `
             <div class="stamp ${isCompleted(m.id) ? "done" : ""}">
               <div>${m.title}</div>
               <strong>${isCompleted(m.id) ? "완료" : "미완료"}</strong>
             </div>
-          `
-          )
-          .join("")}
-      </div>
+          `).join("")}
+        </div>
 
-      <button class="reset-btn" onclick="resetProgress()">처음부터 다시하기</button>
+        <button id="resetBtn" class="main-button back-button">처음부터 다시하기</button>
+      </div>
     </div>
   `;
+
+  document.getElementById("scanBtn").addEventListener("click", startQRScan);
+  document.getElementById("mapBtn").addEventListener("click", renderMap);
+  document.getElementById("resetBtn").addEventListener("click", resetProgress);
+}
+
+function renderMap() {
+  app.innerHTML = `
+    <div class="container">
+      <div class="card">
+        <h1 class="title">지도</h1>
+        <img src="map.png" class="map-img" />
+        <button id="homeBtn" class="main-button back-button">홈으로</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("homeBtn").addEventListener("click", renderHome);
+}
+
+function resetProgress() {
+  if (confirm("정말 처음부터 다시 시작할까요?")) {
+    participant = null;
+    completedMissions = [];
+    localStorage.removeItem("participant");
+    localStorage.removeItem("completedMissions");
+    renderStart();
+  }
 }
 
 function normalizeQR(qrText) {
-  let value = qrText.trim();
+  const value = qrText.trim();
 
   try {
     const url = new URL(value);
@@ -183,9 +206,55 @@ function normalizeQR(qrText) {
 function findMissionByQR(qrText) {
   const value = normalizeQR(qrText);
 
-  return missions.find((mission) => {
+  return missions.find(mission => {
     return mission.id === value || mission.qrValues.includes(value);
   });
+}
+
+function startQRScan() {
+  app.innerHTML = `
+    <div class="container">
+      <div class="card">
+        <h1 class="title">QR 스캔</h1>
+        <p class="subtitle">카메라에 QR코드를 비춰주세요.</p>
+        <div id="reader"></div>
+        <button id="cancelScanBtn" class="main-button back-button">돌아가기</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("cancelScanBtn").addEventListener("click", stopQRScanAndHome);
+
+  currentQrScanner = new Html5Qrcode("reader");
+
+  currentQrScanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: 250,
+    },
+    async (decodedText) => {
+      await currentQrScanner.stop();
+      currentQrScanner = null;
+      handleQRCode(decodedText);
+    },
+    () => {}
+  ).catch((error) => {
+    console.error(error);
+    alert("카메라를 실행할 수 없습니다.");
+    renderHome();
+  });
+}
+
+async function stopQRScanAndHome() {
+  if (currentQrScanner) {
+    try {
+      await currentQrScanner.stop();
+    } catch (e) {}
+    currentQrScanner = null;
+  }
+
+  renderHome();
 }
 
 function handleQRCode(qrText) {
@@ -202,52 +271,8 @@ function handleQRCode(qrText) {
   openMission(mission.id);
 }
 
-function startQRScan() {
-  app.innerHTML = `
-    <div class="container">
-      <h1>QR 스캔</h1>
-      <p class="subtitle">카메라에 QR코드를 비춰주세요.</p>
-      <div id="reader"></div>
-      <button class="reset-btn" onclick="stopQRScanAndHome()">돌아가기</button>
-    </div>
-  `;
-
-  const html5QrCode = new Html5Qrcode("reader");
-  window.currentQrScanner = html5QrCode;
-
-  html5QrCode
-    .start(
-      { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: 250,
-      },
-      async (decodedText) => {
-        await html5QrCode.stop();
-        window.currentQrScanner = null;
-        handleQRCode(decodedText);
-      },
-      () => {}
-    )
-    .catch((err) => {
-      console.error(err);
-      alert("카메라를 실행할 수 없습니다.");
-      renderHome();
-    });
-}
-
-async function stopQRScanAndHome() {
-  if (window.currentQrScanner) {
-    try {
-      await window.currentQrScanner.stop();
-    } catch (e) {}
-    window.currentQrScanner = null;
-  }
-  renderHome();
-}
-
 function openMission(id) {
-  const mission = missions.find((m) => m.id === id);
+  const mission = missions.find(m => m.id === id);
 
   if (!mission) {
     alert("등록되지 않은 미션입니다.");
@@ -264,7 +289,9 @@ function openMission(id) {
 
   if (mission.type === "puzzle") {
     renderPuzzleMission(mission);
-  } else if (mission.type === "blank") {
+  }
+
+  if (mission.type === "blank") {
     renderBlankMission(mission);
   }
 }
@@ -272,18 +299,23 @@ function openMission(id) {
 function renderBlankMission(mission) {
   app.innerHTML = `
     <div class="container">
-      <h1>${mission.title}</h1>
-      <h2>${mission.name}</h2>
+      <div class="card">
+        <h1 class="title">${mission.title}</h1>
+        <h2>${mission.name}</h2>
 
-      <div class="mission-box">
-        <p class="question">${mission.question}</p>
-        <input id="blankAnswer" class="answer-input" placeholder="정답 입력" />
-        <button class="main-btn" onclick="checkBlankAnswer()">정답 확인</button>
+        <div class="mission-box">
+          <p class="question">${mission.question}</p>
+          <input id="blankAnswer" placeholder="정답 입력" />
+          <button id="checkAnswerBtn" class="main-button qr-button">정답 확인</button>
+        </div>
+
+        <button id="homeBtn" class="main-button back-button">홈으로</button>
       </div>
-
-      <button class="reset-btn" onclick="renderHome()">홈으로</button>
     </div>
   `;
+
+  document.getElementById("checkAnswerBtn").addEventListener("click", checkBlankAnswer);
+  document.getElementById("homeBtn").addEventListener("click", renderHome);
 }
 
 function checkBlankAnswer() {
@@ -299,21 +331,25 @@ function checkBlankAnswer() {
 function renderPuzzleMission(mission) {
   app.innerHTML = `
     <div class="container">
-      <h1>${mission.title}</h1>
-      <h2>${mission.name}</h2>
-      <p class="subtitle">사진 조각을 눌러서 순서대로 맞춰보세요.</p>
+      <div class="card">
+        <h1 class="title">${mission.title}</h1>
+        <h2>${mission.name}</h2>
+        <p>사진 조각을 눌러 순서를 바꿔 퍼즐을 완성하세요.</p>
 
-      <div id="puzzle" class="puzzle"></div>
+        <div id="puzzleBoard" class="puzzle"></div>
+        <p id="puzzleMessage"></p>
 
-      <button class="sub-btn" onclick="shufflePuzzle()">다시 섞기</button>
-      <button class="reset-btn" onclick="renderHome()">홈으로</button>
+        <button id="shuffleBtn" class="main-button map-button">다시 섞기</button>
+        <button id="homeBtn" class="main-button back-button">홈으로</button>
+      </div>
     </div>
   `;
 
+  document.getElementById("shuffleBtn").addEventListener("click", shufflePuzzle);
+  document.getElementById("homeBtn").addEventListener("click", renderHome);
+
   createPuzzle();
 }
-
-let puzzleOrder = [];
 
 function createPuzzle() {
   puzzleOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8];
@@ -327,8 +363,8 @@ function shufflePuzzle() {
 }
 
 function drawPuzzle() {
-  const puzzle = document.getElementById("puzzle");
-  puzzle.innerHTML = "";
+  const board = document.getElementById("puzzleBoard");
+  board.innerHTML = "";
 
   puzzleOrder.forEach((num, index) => {
     const piece = document.createElement("div");
@@ -340,17 +376,19 @@ function drawPuzzle() {
 
     piece.style.backgroundPosition = `${x * 50}% ${y * 50}%`;
 
-    piece.onclick = () => {
+    piece.addEventListener("click", () => {
       movePiece(index);
-    };
+    });
 
-    puzzle.appendChild(piece);
+    board.appendChild(piece);
   });
 }
 
 function movePiece(index) {
   if (index > 0) {
-    [puzzleOrder[index - 1], puzzleOrder[index]] = [puzzleOrder[index], puzzleOrder[index - 1]];
+    const temp = puzzleOrder[index - 1];
+    puzzleOrder[index - 1] = puzzleOrder[index];
+    puzzleOrder[index] = temp;
   }
 
   drawPuzzle();
@@ -370,34 +408,56 @@ function checkPuzzleComplete() {
 function showPuzzleFinished() {
   app.innerHTML = `
     <div class="container">
-      <h1>퍼즐 완성!</h1>
-      <p class="subtitle">완성된 사진을 확인하세요.</p>
+      <div class="card">
+        <h1 class="title">퍼즐 완성!</h1>
+        <p class="subtitle">완성된 사진입니다.</p>
 
-      <img src="puzzle.png" class="complete-image" />
+        <img src="puzzle.png" class="complete-image" />
 
-      <button class="main-btn" onclick="completeMission('1')">미션 완료하기</button>
+        <button id="completePuzzleBtn" class="main-button qr-button">미션 완료하기</button>
+      </div>
     </div>
   `;
+
+  document.getElementById("completePuzzleBtn").addEventListener("click", () => {
+    completeMission("1");
+  });
+}
+
+async function completeMission(id) {
+  if (!completedMissions.includes(id)) {
+    completedMissions.push(id);
+    saveProgress();
+    await saveToFirebase(id);
+  }
+
+  showCompleteScreen(id);
 }
 
 function showCompleteScreen(id) {
-  const mission = missions.find((m) => m.id === id);
+  const mission = missions.find(m => m.id === id);
 
   app.innerHTML = `
     <div class="container">
-      <h1>미션 완료!</h1>
-      <div class="complete-stamp">완료 도장</div>
-      <p class="subtitle">${mission.title} - ${mission.name}</p>
+      <div class="card">
+        <h1 class="title">미션 완료!</h1>
+        <div class="complete-stamp">완료 도장</div>
+        <p class="subtitle">${mission.title} - ${mission.name}</p>
 
-      <button class="main-btn" onclick="renderHome()">홈으로 돌아가기</button>
+        <button id="homeBtn" class="main-button qr-button">홈으로 돌아가기</button>
+      </div>
     </div>
   `;
+
+  document.getElementById("homeBtn").addEventListener("click", renderHome);
 }
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    const temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
   }
 }
 
