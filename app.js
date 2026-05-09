@@ -1,448 +1,310 @@
+import { db } from "./firebase.js";
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = document.getElementById("app");
+
 const TOTAL_MISSIONS = 20;
+const USER_ID_KEY = "missionUserId";
+const COMPLETE_KEY = "completedMissions";
 
-const loginBox = document.getElementById("loginBox");
-const mainBox = document.getElementById("mainBox");
-
-const nameInput = document.getElementById("name");
-const baptismNameInput = document.getElementById("baptismName");
-const teamInput = document.getElementById("team");
-
-const enterBtn = document.getElementById("enterBtn");
-const welcomeText = document.getElementById("welcomeText");
-const missionCount = document.getElementById("missionCount");
-const progressFill = document.getElementById("progressFill");
-
-const scanBtn = document.getElementById("scanBtn");
-const mapBtn = document.getElementById("mapBtn");
-const resetBtn = document.getElementById("resetBtn");
-
-const reader = document.getElementById("reader");
-const mapSection = document.getElementById("mapSection");
-const puzzleSection = document.getElementById("puzzleSection");
-
-let html5QrCode = null;
-
-let userInfo = JSON.parse(localStorage.getItem("userInfo")) || null;
-let completedMissions = JSON.parse(localStorage.getItem("completedMissions")) || [];
-
-let puzzleOrder = [];
-let selectedPiece = null;
-
-function saveUserInfo(info) {
-  localStorage.setItem("userInfo", JSON.stringify(info));
+let currentUserId = localStorage.getItem(USER_ID_KEY);
+if (!currentUserId) {
+  currentUserId = "user_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+  localStorage.setItem(USER_ID_KEY, currentUserId);
 }
 
-function saveProgress() {
-  localStorage.setItem("completedMissions", JSON.stringify(completedMissions));
-}
+let completedMissions = JSON.parse(localStorage.getItem(COMPLETE_KEY)) || [];
 
-function showLoginScreen() {
-  loginBox.style.display = "flex";
-  mainBox.style.display = "none";
-}
-
-function showMainScreen() {
-  loginBox.style.display = "none";
-  mainBox.style.display = "flex";
-
-  if (userInfo) {
-    welcomeText.textContent = `${userInfo.team}팀 ${userInfo.name} ${userInfo.baptismName}님`;
+const missions = [
+  {
+    id: 1,
+    title: "미션 1",
+    name: "퍼즐 맞추기",
+    type: "puzzle",
+    image: "puzzle.png"
+  },
+  {
+    id: 2,
+    title: "미션 2",
+    name: "빈칸 채우기",
+    type: "blank",
+    questionBefore: "아무것도",
+    questionAfter: "하지 마십시오.",
+    answer: "걱정"
   }
+];
 
-  hideAllSections();
-  updateProgress();
+async function saveProgress() {
+  localStorage.setItem(COMPLETE_KEY, JSON.stringify(completedMissions));
+
+  try {
+    await setDoc(doc(db, "missionUsers", currentUserId), {
+      userId: currentUserId,
+      completedMissions,
+      updatedAt: new Date()
+    });
+  } catch (error) {
+    console.log("Firebase 저장 오류:", error);
+  }
 }
 
-function hideAllSections() {
-  reader.style.display = "none";
-  mapSection.style.display = "none";
-  puzzleSection.style.display = "none";
+async function loadProgress() {
+  try {
+    const snap = await getDoc(doc(db, "missionUsers", currentUserId));
+    if (snap.exists()) {
+      completedMissions = snap.data().completedMissions || [];
+      localStorage.setItem(COMPLETE_KEY, JSON.stringify(completedMissions));
+    }
+  } catch (error) {
+    console.log("Firebase 불러오기 오류:", error);
+  }
 }
 
-function updateProgress() {
+function completeMission(id) {
+  if (!completedMissions.includes(id)) {
+    completedMissions.push(id);
+    saveProgress();
+  }
+}
+
+function isCompleted(id) {
+  return completedMissions.includes(id);
+}
+
+function getMissionFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const missionId = Number(params.get("mission"));
+  return missions.find(m => m.id === missionId);
+}
+
+function showHome() {
   const completedCount = completedMissions.length;
-  const percent = Math.round((completedCount / TOTAL_MISSIONS) * 100);
 
-  missionCount.textContent = `${completedCount} / ${TOTAL_MISSIONS}`;
-  progressFill.style.width = `${percent}%`;
+  app.innerHTML = `
+    <div class="home-wrap">
+      <h1>청소년 대회 미션 여권</h1>
+      <p class="subtitle">QR을 찍고 미션을 완료해보세요!</p>
+
+      <div class="progress-card">
+        <div class="progress-text">
+          <strong>${completedCount}</strong> / ${TOTAL_MISSIONS} 완료
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${(completedCount / TOTAL_MISSIONS) * 100}%"></div>
+        </div>
+      </div>
+
+      <div class="mission-list">
+        ${Array.from({ length: TOTAL_MISSIONS }, (_, i) => {
+          const id = i + 1;
+          const done = isCompleted(id);
+          const mission = missions.find(m => m.id === id);
+
+          return `
+            <div class="mission-card ${done ? "done" : ""}">
+              <div>
+                <strong>미션 ${id}</strong>
+                <p>${mission ? mission.name : "준비 중"}</p>
+              </div>
+              <div class="stamp">${done ? "완료" : "미완료"}</div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
 }
 
-enterBtn.addEventListener("click", () => {
-  const name = nameInput.value.trim();
-  const baptismName = baptismNameInput.value.trim();
-  const team = teamInput.value.trim();
-
-  if (!name || !baptismName || !team) {
-    alert("이름, 세례명, 팀 이름을 모두 입력해주세요.");
+function showMission(mission) {
+  if (!mission) {
+    showHome();
     return;
   }
 
-  userInfo = { name, baptismName, team };
-  saveUserInfo(userInfo);
-  showMainScreen();
-});
-
-scanBtn.addEventListener("click", () => {
-  hideAllSections();
-  reader.style.display = "block";
-  startQRScanner();
-});
-
-mapBtn.addEventListener("click", () => {
-  stopScanner();
-
-  if (mapSection.style.display === "block") {
-    mapSection.style.display = "none";
-  } else {
-    hideAllSections();
-    mapSection.style.display = "block";
+  if (mission.type === "puzzle") {
+    showPuzzleMission(mission);
   }
-});
 
-resetBtn.addEventListener("click", () => {
-  const ok = confirm("정말 처음부터 다시 시작할까요? 이름과 진행 상황이 모두 삭제됩니다.");
-  if (!ok) return;
-
-  stopScanner();
-
-  localStorage.removeItem("userInfo");
-  localStorage.removeItem("completedMissions");
-
-  userInfo = null;
-  completedMissions = [];
-
-  nameInput.value = "";
-  baptismNameInput.value = "";
-  teamInput.value = "";
-
-  showLoginScreen();
-});
-
-function startQRScanner() {
-  stopScanner();
-
-  html5QrCode = new Html5Qrcode("reader");
-
-  html5QrCode.start(
-    { facingMode: "environment" },
-    {
-      fps: 10,
-      qrbox: {
-        width: 250,
-        height: 250
-      }
-    },
-    (decodedText) => {
-      stopScanner();
-      handleQRCode(decodedText);
-    },
-    () => {}
-  ).catch(() => {
-    alert("카메라 권한을 허용해야 QR 스캔을 사용할 수 있습니다.");
-    hideAllSections();
-  });
-}
-
-function stopScanner() {
-  if (html5QrCode) {
-    html5QrCode.stop().catch(() => {});
-    html5QrCode = null;
+  if (mission.type === "blank") {
+    showBlankMission(mission);
   }
 }
 
-function handleQRCode(decodedText) {
-  const qrText = decodedText.trim();
-
-  if (!qrText.startsWith("gamgok_mission_")) {
-    alert("등록되지 않은 QR코드입니다.");
-    hideAllSections();
+function showBlankMission(mission) {
+  if (isCompleted(mission.id)) {
+    showCompleteScreen(mission);
     return;
   }
 
-  const missionNumberText = qrText.replace("gamgok_mission_", "");
-  const missionNumber = Number(missionNumberText);
+  app.innerHTML = `
+    <div class="mission-wrap">
+      <h1>${mission.title}</h1>
+      <h2>${mission.name}</h2>
 
-  if (!missionNumber || missionNumber < 1 || missionNumber > TOTAL_MISSIONS) {
-    alert("등록되지 않은 미션 QR코드입니다.");
-    hideAllSections();
-    return;
-  }
+      <div class="blank-card">
+        <p class="blank-question">
+          ${mission.questionBefore}
+          <input id="blankInput" type="text" placeholder="??" autocomplete="off" />
+          ${mission.questionAfter}
+        </p>
 
-  openMission(missionNumber);
-}
+        <button id="checkAnswerBtn">정답 확인</button>
+        <p id="resultText"></p>
+      </div>
 
-function openMission(num) {
-  hideAllSections();
-
-  if (num === 1) {
-    showPuzzleMission();
-    return;
-  }
-
-  showMissionPlaceholder(num);
-}
-
-function showPuzzleMission() {
-  puzzleSection.style.display = "block";
-
-  puzzleSection.innerHTML = `
-    <h2>1번 미션: 퍼즐 맞추기</h2>
-    <p>사진 조각을 눌러 서로 바꾸며 퍼즐을 완성하세요.</p>
-
-    <div id="puzzleBoard"></div>
-
-    <p id="puzzleMessage"></p>
-
-    <button class="main-button map-button" id="shufflePuzzleBtn">
-      다시 섞기
-    </button>
+      <button class="home-btn" id="goHomeBtn">메인으로</button>
+    </div>
   `;
 
-  createPuzzle();
+  const input = document.getElementById("blankInput");
+  const resultText = document.getElementById("resultText");
 
-  document.getElementById("shufflePuzzleBtn").addEventListener("click", () => {
-    createPuzzle();
+  document.getElementById("checkAnswerBtn").addEventListener("click", () => {
+    const userAnswer = input.value.trim().replace(/\s/g, "");
+
+    if (userAnswer === mission.answer) {
+      completeMission(mission.id);
+      showCompleteScreen(mission);
+    } else {
+      resultText.textContent = "아직 아니에요. 다시 생각해보세요!";
+      resultText.style.color = "#d33";
+    }
   });
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      document.getElementById("checkAnswerBtn").click();
+    }
+  });
+
+  document.getElementById("goHomeBtn").addEventListener("click", showHome);
 }
 
-function createPuzzle() {
-  const puzzleBoard = document.getElementById("puzzleBoard");
-  const puzzleMessage = document.getElementById("puzzleMessage");
+function showPuzzleMission(mission) {
+  if (isCompleted(mission.id)) {
+    showCompleteScreen(mission);
+    return;
+  }
 
-  puzzleOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-  selectedPiece = null;
+  app.innerHTML = `
+    <div class="mission-wrap">
+      <h1>${mission.title}</h1>
+      <h2>${mission.name}</h2>
+      <p>흩어진 조각을 맞춰 그림을 완성하세요.</p>
 
-  do {
-    puzzleOrder = shuffleArray([...puzzleOrder]);
-  } while (isPuzzleSolved());
+      <div id="puzzleBoard" class="puzzle-board"></div>
 
-  puzzleBoard.innerHTML = "";
-  puzzleMessage.textContent = "";
+      <button id="shuffleBtn">다시 섞기</button>
+      <button class="home-btn" id="goHomeBtn">메인으로</button>
+    </div>
+  `;
 
-  puzzleBoard.style.display = "grid";
-  puzzleBoard.style.gridTemplateColumns = "repeat(3, 1fr)";
-  puzzleBoard.style.gap = "4px";
-  puzzleBoard.style.width = "300px";
-  puzzleBoard.style.height = "300px";
-  puzzleBoard.style.margin = "18px auto";
-  puzzleBoard.style.border = "3px solid #8b5e34";
-  puzzleBoard.style.background = "#8b5e34";
+  const board = document.getElementById("puzzleBoard");
+  let pieces = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  let selectedIndex = null;
 
-  renderPuzzlePieces();
-}
+  function shufflePieces() {
+    pieces = pieces.sort(() => Math.random() - 0.5);
 
-function renderPuzzlePieces() {
-  const puzzleBoard = document.getElementById("puzzleBoard");
-
-  puzzleBoard.innerHTML = "";
-
-  puzzleOrder.forEach((pieceNumber, currentIndex) => {
-    const piece = document.createElement("div");
-
-    const row = Math.floor(pieceNumber / 3);
-    const col = pieceNumber % 3;
-
-    piece.style.width = "100%";
-    piece.style.height = "100%";
-    piece.style.backgroundImage = "url('puzzle.png')";
-    piece.style.backgroundSize = "300px 300px";
-    piece.style.backgroundPosition = `-${col * 100}px -${row * 100}px`;
-    piece.style.cursor = "pointer";
-    piece.style.border = "1px solid #fff8e8";
-
-    if (selectedPiece === currentIndex) {
-      piece.style.outline = "4px solid #ffcc00";
+    if (pieces.every((v, i) => v === i)) {
+      shufflePieces();
+      return;
     }
 
-    piece.addEventListener("click", () => {
-      handlePieceClick(currentIndex);
+    renderPuzzle();
+  }
+
+  function renderPuzzle() {
+    board.innerHTML = "";
+
+    pieces.forEach((piece, index) => {
+      const tile = document.createElement("div");
+      tile.className = "puzzle-piece";
+      tile.style.backgroundImage = `url('${mission.image}')`;
+
+      const x = piece % 3;
+      const y = Math.floor(piece / 3);
+
+      tile.style.backgroundSize = "300% 300%";
+      tile.style.backgroundPosition = `${x * 50}% ${y * 50}%`;
+
+      if (selectedIndex === index) {
+        tile.classList.add("selected");
+      }
+
+      tile.addEventListener("click", () => {
+        if (selectedIndex === null) {
+          selectedIndex = index;
+        } else {
+          const temp = pieces[selectedIndex];
+          pieces[selectedIndex] = pieces[index];
+          pieces[index] = temp;
+          selectedIndex = null;
+
+          if (isPuzzleSolved()) {
+            completeMission(mission.id);
+            showPuzzleCompleteImage(mission);
+            return;
+          }
+        }
+
+        renderPuzzle();
+      });
+
+      board.appendChild(tile);
     });
+  }
 
-    puzzleBoard.appendChild(piece);
-  });
+  function isPuzzleSolved() {
+    return pieces.every((piece, index) => piece === index);
+  }
+
+  document.getElementById("shuffleBtn").addEventListener("click", shufflePieces);
+  document.getElementById("goHomeBtn").addEventListener("click", showHome);
+
+  shufflePieces();
 }
 
-function handlePieceClick(index) {
-  if (selectedPiece === null) {
-    selectedPiece = index;
-    renderPuzzlePieces();
-    return;
-  }
+function showPuzzleCompleteImage(mission) {
+  app.innerHTML = `
+    <div class="mission-wrap">
+      <h1>퍼즐 완성!</h1>
+      <p>그림을 완성했습니다.</p>
 
-  if (selectedPiece === index) {
-    selectedPiece = null;
-    renderPuzzlePieces();
-    return;
-  }
+      <img src="${mission.image}" class="complete-image" />
 
-  const temp = puzzleOrder[selectedPiece];
-  puzzleOrder[selectedPiece] = puzzleOrder[index];
-  puzzleOrder[index] = temp;
+      <div class="complete-stamp">미션 완료</div>
 
-  selectedPiece = null;
-  renderPuzzlePieces();
-
-  if (isPuzzleSolved()) {
-    showPuzzleCompleteScreen();
-  }
-}
-
-function showPuzzleCompleteScreen() {
-  const puzzleBoard = document.getElementById("puzzleBoard");
-  const puzzleMessage = document.getElementById("puzzleMessage");
-  const shufflePuzzleBtn = document.getElementById("shufflePuzzleBtn");
-
-  if (shufflePuzzleBtn) {
-    shufflePuzzleBtn.style.display = "none";
-  }
-
-  puzzleBoard.style.display = "block";
-  puzzleBoard.style.width = "300px";
-  puzzleBoard.style.height = "auto";
-  puzzleBoard.style.margin = "18px auto";
-  puzzleBoard.style.border = "none";
-  puzzleBoard.style.background = "transparent";
-
-  puzzleBoard.innerHTML = `
-    <img 
-      src="puzzle.png"
-      alt="완성된 퍼즐"
-      style="
-        width:100%;
-        border-radius:18px;
-        border:4px solid #8b5e34;
-        box-shadow:0 8px 18px rgba(60, 38, 15, 0.25);
-      "
-    />
-  `;
-
-  puzzleMessage.innerHTML = `
-    <div style="
-      margin-top:18px;
-      font-size:24px;
-      font-weight:900;
-      color:#8b5e34;
-    ">
-      퍼즐 완성!
+      <button class="home-btn" id="goHomeBtn">메인으로</button>
     </div>
-
-    <p style="
-      margin-top:8px;
-      color:#5a3d21;
-      line-height:1.6;
-    ">
-      완성된 사진을 확인했습니다.<br>
-      아래 버튼을 누르면 미션이 완료됩니다.
-    </p>
-
-    <button
-      id="finishPuzzleMissionBtn"
-      class="main-button qr-button"
-      style="margin-top:18px;"
-    >
-      미션 완료하기
-    </button>
   `;
 
-  document.getElementById("finishPuzzleMissionBtn").addEventListener("click", () => {
-    finishPuzzleMission();
-  });
+  document.getElementById("goHomeBtn").addEventListener("click", showHome);
 }
 
-function finishPuzzleMission() {
-  const missionId = "gamgok_mission_01";
+function showCompleteScreen(mission) {
+  app.innerHTML = `
+    <div class="mission-wrap">
+      <h1>${mission.title}</h1>
+      <h2>${mission.name}</h2>
 
-  if (!completedMissions.includes(missionId)) {
-    completedMissions.push(missionId);
-    saveProgress();
-  }
+      <div class="complete-stamp">미션 완료</div>
 
-  updateProgress();
+      <p>축하합니다! 이 미션을 완료했습니다.</p>
 
-  const puzzleMessage = document.getElementById("puzzleMessage");
-
-  puzzleMessage.innerHTML = `
-    <div style="
-      margin-top:18px;
-      font-size:24px;
-      font-weight:900;
-      color:#8b5e34;
-    ">
-      1번 미션 완료!
+      <button class="home-btn" id="goHomeBtn">메인으로</button>
     </div>
-
-    <p style="
-      margin-top:8px;
-      color:#5a3d21;
-      line-height:1.6;
-    ">
-      완성된 사진을 확인했습니다.<br>
-      다음 장소로 이동하세요.
-    </p>
-
-    <button
-      class="main-button back-button"
-      id="backHomeAfterPuzzleBtn"
-    >
-      메인으로 돌아가기
-    </button>
   `;
 
-  document.getElementById("backHomeAfterPuzzleBtn").addEventListener("click", () => {
-    showMainScreen();
-  });
+  document.getElementById("goHomeBtn").addEventListener("click", showHome);
 }
 
-function isPuzzleSolved() {
-  return puzzleOrder.every((pieceNumber, index) => pieceNumber === index);
-}
+await loadProgress();
 
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const randomIndex = Math.floor(Math.random() * (i + 1));
-    const temp = array[i];
+const missionFromUrl = getMissionFromUrl();
 
-    array[i] = array[randomIndex];
-    array[randomIndex] = temp;
-  }
-
-  return array;
-}
-
-function showMissionPlaceholder(num) {
-  puzzleSection.style.display = "block";
-
-  puzzleSection.innerHTML = `
-    <h2>${num}번 미션</h2>
-    <p>이곳에 ${num}번 미션 내용이 들어갑니다.</p>
-
-    <button class="main-button qr-button" id="completeMissionBtn">
-      미션 완료하기
-    </button>
-  `;
-
-  document.getElementById("completeMissionBtn").addEventListener("click", () => {
-    completeMission(num);
-  });
-}
-
-function completeMission(num) {
-  const missionId = `gamgok_mission_${String(num).padStart(2, "0")}`;
-
-  if (!completedMissions.includes(missionId)) {
-    completedMissions.push(missionId);
-    saveProgress();
-    alert(`${num}번 미션 완료!`);
-  } else {
-    alert(`${num}번 미션은 이미 완료했습니다.`);
-  }
-
-  hideAllSections();
-  updateProgress();
-}
-
-if (userInfo) {
-  showMainScreen();
+if (missionFromUrl) {
+  showMission(missionFromUrl);
 } else {
-  showLoginScreen();
+  showHome();
 }
