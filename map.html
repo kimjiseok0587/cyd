@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>미션 지도</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>미션 지도</h1>
+
+    <p id="welcome"></p>
+
+    <h2>현재 진행 상황</h2>
+
+    <div class="spot" onclick="goMission(1)" id="spot1">
+      📍 1번 스팟 - 미완료
+    </div>
+
+    <div class="spot" onclick="goMission(2)" id="spot2">
+      📍 2번 스팟 - 미완료
+    </div>
+
+    <div class="spot" onclick="goMission(3)" id="spot3">
+      📍 3번 스팟 - 미완료
+    </div>
+
+  </div>
+
+  <script>
+    const name = localStorage.getItem("name");
+    const baptismName = localStorage.getItem("baptismName");
+
+    document.getElementById("welcome").innerText =
+      name + " " + baptismName + "님 환영합니다!";
+
+    function goMission(spotNumber) {
+      window.location.href = "mission.html?spot=" + spotNumber;
+    }
+
+    const completedSpots =
+      JSON.parse(localStorage.getItem("completedSpots")) || [];
+
+    completedSpots.forEach(function(spotId) {
+      const spotElement = document.getElementById("spot" + spotId);
+
+      if (spotElement) {
+        spotElement.innerText = "✅ " + spotId + "번 스팟 - 완료";
+        spotElement.classList.add("completed");
+      }
+    });
+  </script>
+
+</body>
+</html>
