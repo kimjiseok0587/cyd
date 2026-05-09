@@ -19,7 +19,6 @@ const resetBtn = document.getElementById("resetBtn");
 const reader = document.getElementById("reader");
 const mapSection = document.getElementById("mapSection");
 const puzzleSection = document.getElementById("puzzleSection");
-const puzzleMessage = document.getElementById("puzzleMessage");
 
 let html5QrCode = null;
 
@@ -34,12 +33,9 @@ function saveProgress() {
   localStorage.setItem("completedMissions", JSON.stringify(completedMissions));
 }
 
-function updateProgress() {
-  const completedCount = completedMissions.length;
-  const percent = Math.round((completedCount / TOTAL_MISSIONS) * 100);
-
-  missionCount.textContent = `${completedCount} / ${TOTAL_MISSIONS}`;
-  progressFill.style.width = `${percent}%`;
+function showLoginScreen() {
+  loginBox.style.display = "flex";
+  mainBox.style.display = "none";
 }
 
 function showMainScreen() {
@@ -47,22 +43,25 @@ function showMainScreen() {
   mainBox.style.display = "flex";
 
   if (userInfo) {
-    welcomeText.textContent = `${userInfo.name} ${userInfo.baptismName}님, 환영합니다`;
+    welcomeText.textContent = `${userInfo.team}팀 ${userInfo.name} ${userInfo.baptismName}님`;
   }
 
   hideAllSections();
   updateProgress();
 }
 
-function showLoginScreen() {
-  loginBox.style.display = "flex";
-  mainBox.style.display = "none";
-}
-
 function hideAllSections() {
   reader.style.display = "none";
   mapSection.style.display = "none";
   puzzleSection.style.display = "none";
+}
+
+function updateProgress() {
+  const completedCount = completedMissions.length;
+  const percent = Math.round((completedCount / TOTAL_MISSIONS) * 100);
+
+  missionCount.textContent = `${completedCount} / ${TOTAL_MISSIONS}`;
+  progressFill.style.width = `${percent}%`;
 }
 
 enterBtn.addEventListener("click", () => {
@@ -93,11 +92,11 @@ scanBtn.addEventListener("click", () => {
 
 mapBtn.addEventListener("click", () => {
   stopScanner();
-  hideAllSections();
 
   if (mapSection.style.display === "block") {
     mapSection.style.display = "none";
   } else {
+    hideAllSections();
     mapSection.style.display = "block";
   }
 });
@@ -123,9 +122,7 @@ resetBtn.addEventListener("click", () => {
 });
 
 function startQRScanner() {
-  if (html5QrCode) {
-    stopScanner();
-  }
+  stopScanner();
 
   html5QrCode = new Html5Qrcode("reader");
 
@@ -157,33 +154,47 @@ function stopScanner() {
 }
 
 function handleQRCode(decodedText) {
+  const qrText = decodedText.trim();
+
+  if (!qrText.startsWith("gamgok_mission_")) {
+    alert("등록되지 않은 QR코드입니다.");
+    hideAllSections();
+    return;
+  }
+
+  const missionNumberText = qrText.replace("gamgok_mission_", "");
+  const missionNumber = Number(missionNumberText);
+
+  if (!missionNumber || missionNumber < 1 || missionNumber > TOTAL_MISSIONS) {
+    alert("등록되지 않은 미션 QR코드입니다.");
+    hideAllSections();
+    return;
+  }
+
+  openMission(missionNumber);
+}
+
+function openMission(num) {
   hideAllSections();
 
-  if (decodedText.includes("mission1")) {
+  if (num === 1) {
     showMission1();
     return;
   }
 
-  if (decodedText.includes("mission2")) {
-    completeMission(2);
-    return;
-  }
-
-  if (decodedText.includes("mission3")) {
-    completeMission(3);
-    return;
-  }
-
-  alert("등록되지 않은 QR코드입니다.");
+  showMissionPlaceholder(num);
 }
 
 function showMission1() {
   puzzleSection.style.display = "block";
-  puzzleMessage.textContent = "";
 
   puzzleSection.innerHTML = `
     <h2>1번 미션: 퍼즐 맞추기</h2>
-    <p>이곳에 기존 9조각 퍼즐 게임을 연결할 예정입니다.</p>
+    <p>사진 조각을 눌러 서로 바꾸며 퍼즐을 완성하세요.</p>
+
+    <div id="puzzleBoard"></div>
+
+    <p id="puzzleMessage"></p>
 
     <button class="main-button qr-button" id="completeMission1Btn">
       미션 완료하기
@@ -195,19 +206,36 @@ function showMission1() {
   });
 }
 
+function showMissionPlaceholder(num) {
+  puzzleSection.style.display = "block";
+
+  puzzleSection.innerHTML = `
+    <h2>${num}번 미션</h2>
+    <p>이곳에 ${num}번 미션 내용이 들어갑니다.</p>
+
+    <button class="main-button qr-button" id="completeMissionBtn">
+      미션 완료하기
+    </button>
+  `;
+
+  document.getElementById("completeMissionBtn").addEventListener("click", () => {
+    completeMission(num);
+  });
+}
+
 function completeMission(num) {
-  const missionId = `mission${num}`;
+  const missionId = `gamgok_mission_${String(num).padStart(2, "0")}`;
 
   if (!completedMissions.includes(missionId)) {
     completedMissions.push(missionId);
     saveProgress();
+    alert(`${num}번 미션 완료!`);
+  } else {
+    alert(`${num}번 미션은 이미 완료했습니다.`);
   }
 
-  updateProgress();
-
-  alert(`${num}번 미션 완료!`);
-
   hideAllSections();
+  updateProgress();
 }
 
 if (userInfo) {
