@@ -1,11 +1,17 @@
 import { db } from "./firebase.js";
-import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app = document.getElementById("app");
 
 const TOTAL_MISSIONS = 20;
 const USER_ID_KEY = "missionUserId";
 const COMPLETE_KEY = "completedMissions";
+
+let qrScanner = null;
 
 let currentUserId = localStorage.getItem(USER_ID_KEY);
 if (!currentUserId) {
@@ -18,6 +24,7 @@ let completedMissions = JSON.parse(localStorage.getItem(COMPLETE_KEY)) || [];
 const missions = [
   {
     id: 1,
+    qrCode: "mission1",
     title: "미션 1",
     name: "퍼즐 맞추기",
     type: "puzzle",
@@ -25,6 +32,7 @@ const missions = [
   },
   {
     id: 2,
+    qrCode: "mission2",
     title: "미션 2",
     name: "빈칸 채우기",
     type: "blank",
@@ -71,19 +79,15 @@ function isCompleted(id) {
   return completedMissions.includes(id);
 }
 
-function getMissionFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const missionId = Number(params.get("mission"));
-  return missions.find(m => m.id === missionId);
-}
-
 function showHome() {
+  stopScanner();
+
   const completedCount = completedMissions.length;
 
   app.innerHTML = `
     <div class="home-wrap">
       <h1>청소년 대회 미션 여권</h1>
-      <p class="subtitle">QR을 찍고 미션을 완료해보세요!</p>
+      <p class="subtitle">QR을 찍고 미션을 완료하세요!</p>
 
       <div class="progress-card">
         <div class="progress-text">
@@ -93,6 +97,8 @@ function showHome() {
           <div class="progress-fill" style="width:${(completedCount / TOTAL_MISSIONS) * 100}%"></div>
         </div>
       </div>
+
+      <button id="scanBtn" class="scan-btn">QR 스캔하기</button>
 
       <div class="mission-list">
         ${Array.from({ length: TOTAL_MISSIONS }, (_, i) => {
@@ -113,14 +119,100 @@ function showHome() {
       </div>
     </div>
   `;
+
+  document.getElementById("scanBtn").addEventListener("click", showScanner);
 }
 
-function showMission(mission) {
+function showScanner() {
+  app.innerHTML = `
+    <div class="mission-wrap">
+      <h1>QR 스캔</h1>
+      <p>미션 장소의 QR을 카메라로 비춰주세요.</p>
+
+      <div id="qr-reader" style="width:100%; max-width:400px; margin:20px auto;"></div>
+
+      <p id="scanResult"></p>
+
+      <button class="home-btn" id="goHomeBtn">메인으로</button>
+    </div>
+  `;
+
+  document.getElementById("goHomeBtn").addEventListener("click", showHome);
+
+  qrScanner = new Html5Qrcode("qr-reader");
+
+  qrScanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: 250
+    },
+    qrText => {
+      handleQrResult(qrText);
+    },
+    error => {}
+  ).catch(err => {
+    document.getElementById("scanResult").textContent =
+      "카메라를 사용할 수 없습니다. 브라우저 권한을 확인해주세요.";
+  });
+}
+
+function stopScanner() {
+  if (qrScanner) {
+    qrScanner.stop()
+      .then(() => {
+        qrScanner.clear();
+        qrScanner = null;
+      })
+      .catch(() => {
+        qrScanner = null;
+      });
+  }
+}
+
+function handleQrResult(qrText) {
+  stopScanner();
+
+  const cleanText = qrText.trim();
+
+  let mission = missions.find(m => m.qrCode === cleanText);
+
   if (!mission) {
-    showHome();
+    const missionNumber = extractMissionNumber(cleanText);
+    if (missionNumber) {
+      mission = missions.find(m => m.id === missionNumber);
+    }
+  }
+
+  if (!mission) {
+    app.innerHTML = `
+      <div class="mission-wrap">
+        <h1>등록되지 않은 QR입니다</h1>
+        <p>이 QR은 미션 QR로 등록되어 있지 않습니다.</p>
+        <p class="small-text">읽은 내용: ${cleanText}</p>
+        <button class="home-btn" id="goHomeBtn">메인으로</button>
+      </div>
+    `;
+
+    document.getElementById("goHomeBtn").addEventListener("click", showHome);
     return;
   }
 
+  showMission(mission);
+}
+
+function extractMissionNumber(text) {
+  if (text.includes("mission=1")) return 1;
+  if (text.includes("mission=2")) return 2;
+  if (text.includes("mission1")) return 1;
+  if (text.includes("mission2")) return 2;
+  if (text.includes("mission_01")) return 1;
+  if (text.includes("mission_02")) return 2;
+
+  return null;
+}
+
+function showMission(mission) {
   if (mission.type === "puzzle") {
     showPuzzleMission(mission);
   }
@@ -300,11 +392,4 @@ function showCompleteScreen(mission) {
 }
 
 await loadProgress();
-
-const missionFromUrl = getMissionFromUrl();
-
-if (missionFromUrl) {
-  showMission(missionFromUrl);
-} else {
-  showHome();
-}
+showHome();
