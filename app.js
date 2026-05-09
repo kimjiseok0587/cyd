@@ -268,3 +268,12 @@ window.resetGame = function () {
 window.renderHome = renderHome;
 
 renderHome();
+
+alert("app.js 연결됨");
+
+document.body.innerHTML = `
+  <div style="padding:30px; text-align:center;">
+    <h1>화면 테스트 성공</h1>
+    <p>app.js가 정상 연결되었습니다.</p>
+  </div>
+`;
