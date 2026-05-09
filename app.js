@@ -1,100 +1,112 @@
-import { db } from "./firebase.js";
-
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const app = document.getElementById("app");
 
 const missions = {
-  mission1: {
-    id: "mission1",
-    title: "미션 1",
-    type: "puzzle",
-  },
-  mission2: {
-    id: "mission2",
-    title: "미션 2",
-    type: "blank",
-    question: "아무것도 ____하지 마십시오.",
-    answer: "걱정",
-  },
-};
-
-let userId = localStorage.getItem("userId");
-if (!userId) {
-  userId = "user_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
-  localStorage.setItem("userId", userId);
-}
-
-let progress = {
   mission1: false,
   mission2: false,
 };
 
-const app = document.getElementById("app");
-
-async function loadProgress() {
-  const ref = doc(db, "users", userId);
-  const snap = await getDoc(ref);
-
-  if (snap.exists()) {
-    progress = snap.data().progress || progress;
-  } else {
-    await setDoc(ref, {
-      userId,
-      progress,
-      createdAt: new Date().toISOString(),
-    });
-  }
-}
-
-async function saveProgress() {
-  const ref = doc(db, "users", userId);
-  await updateDoc(ref, {
-    progress,
-    updatedAt: new Date().toISOString(),
-  });
-}
-
 function completedCount() {
-  return Object.values(progress).filter(Boolean).length;
+  return Object.values(missions).filter(Boolean).length;
 }
 
 function renderHome() {
   app.innerHTML = `
-    <div class="page">
-      <h1 class="title">청소년대회</h1>
-      <p class="subtitle">우리 팀</p>
+    <div class="page" style="padding:20px; text-align:center; font-family:sans-serif;">
 
-      <div class="progress-box">
+      <h1 style="font-size:40px;">청소년대회</h1>
+      <p style="font-size:20px;">QR 미션 투어</p>
+
+      <div style="
+        background:#f3f3f3;
+        padding:20px;
+        border-radius:20px;
+        margin:20px auto;
+        max-width:350px;
+      ">
         <p>현재 진행 상황</p>
-        <h2>${completedCount()} / ${Object.keys(missions).length}</h2>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width:${completedCount() / Object.keys(missions).length * 100}%"></div>
+
+        <h2 style="font-size:40px;">
+          ${completedCount()} / 2
+        </h2>
+
+        <div style="
+          width:100%;
+          height:20px;
+          background:#ddd;
+          border-radius:10px;
+          overflow:hidden;
+        ">
+          <div style="
+            width:${completedCount() * 50}%;
+            height:100%;
+            background:#4caf50;
+          "></div>
         </div>
       </div>
 
-      <p class="guide">QR코드를 찾아 미션을 수행하세요.</p>
+      <p style="margin-top:30px;">
+        QR코드를 스캔하여 미션을 수행하세요.
+      </p>
 
-      <button class="main-btn" onclick="startQR()">QR 스캔하기</button>
-      <button class="sub-btn" onclick="showMap()">지도 보기</button>
+      <button onclick="startQR()" style="
+        padding:15px 30px;
+        font-size:20px;
+        border:none;
+        border-radius:15px;
+        background:#4caf50;
+        color:white;
+        margin-top:20px;
+      ">
+        QR 스캔하기
+      </button>
 
-      <button class="reset-btn" onclick="resetGame()">처음부터 다시하기</button>
+      <br><br>
+
+      <button onclick="showMap()" style="
+        padding:12px 25px;
+        font-size:18px;
+        border:none;
+        border-radius:15px;
+        background:#2196f3;
+        color:white;
+      ">
+        지도 보기
+      </button>
+
+      <br><br>
+
+      <button onclick="resetGame()" style="
+        padding:10px 20px;
+        font-size:16px;
+        border:none;
+        border-radius:12px;
+        background:#ff5252;
+        color:white;
+      ">
+        처음부터 다시하기
+      </button>
+
     </div>
   `;
 }
 
 window.startQR = function () {
   app.innerHTML = `
-    <div class="page">
+    <div style="padding:20px; text-align:center;">
       <h2>QR 스캔</h2>
-      <p>카메라로 QR코드를 스캔하세요.</p>
 
-      <div id="reader" style="width:100%; max-width:350px; margin:20px auto;"></div>
+      <div id="reader" style="
+        width:300px;
+        margin:20px auto;
+      "></div>
 
-      <button class="reset-btn" onclick="renderHome()">돌아가기</button>
+      <button onclick="renderHome()" style="
+        padding:10px 20px;
+        border:none;
+        border-radius:12px;
+      ">
+        돌아가기
+      </button>
     </div>
   `;
 
@@ -106,193 +118,153 @@ window.startQR = function () {
       fps: 10,
       qrbox: 250,
     },
+
     async (decodedText) => {
+
       await html5QrCode.stop();
+
       handleQR(decodedText);
-    },
-    () => {}
-  ).catch(() => {
-    alert("카메라를 사용할 수 없습니다.");
-    renderHome();
-  });
+    }
+  );
 };
 
 function handleQR(text) {
-  let missionId = "";
 
-  if (text.includes("mission1")) missionId = "mission1";
-  if (text.includes("mission2")) missionId = "mission2";
-
-  if (!missionId || !missions[missionId]) {
-    alert("등록되지 않은 QR입니다.");
-    renderHome();
+  if (text.includes("mission1")) {
+    renderMission1();
     return;
   }
 
-  if (progress[missionId]) {
-    alert("이미 완료한 미션입니다.");
-    renderHome();
+  if (text.includes("mission2")) {
+    renderMission2();
     return;
   }
 
-  const mission = missions[missionId];
-
-  if (mission.type === "puzzle") {
-    renderPuzzleMission(missionId);
-  }
-
-  if (mission.type === "blank") {
-    renderBlankMission(missionId);
-  }
+  alert("등록되지 않은 QR입니다.");
+  renderHome();
 }
 
-function renderPuzzleMission(missionId) {
+function renderMission1() {
+
   app.innerHTML = `
-    <div class="page">
+    <div style="padding:20px; text-align:center;">
+
       <h2>미션 1</h2>
-      <p>퍼즐을 완성하세요.</p>
 
-      <div id="puzzle"></div>
+      <p>퍼즐 미션 성공!</p>
 
-      <button class="reset-btn" onclick="renderHome()">돌아가기</button>
+      <img src="./puzzle.png" style="
+        width:300px;
+        max-width:90%;
+        border-radius:20px;
+        margin-top:20px;
+      ">
+
+      <br><br>
+
+      <button onclick="completeMission1()" style="
+        padding:15px 30px;
+        font-size:20px;
+        border:none;
+        border-radius:15px;
+        background:#4caf50;
+        color:white;
+      ">
+        완료하기
+      </button>
+
     </div>
   `;
-
-  const puzzle = document.getElementById("puzzle");
-  const pieces = [];
-
-  for (let i = 0; i < 9; i++) {
-    pieces.push(i);
-  }
-
-  pieces.sort(() => Math.random() - 0.5);
-
-  puzzle.style.display = "grid";
-  puzzle.style.gridTemplateColumns = "repeat(3, 1fr)";
-  puzzle.style.gap = "4px";
-  puzzle.style.width = "300px";
-  puzzle.style.height = "300px";
-  puzzle.style.margin = "20px auto";
-
-  pieces.forEach((num) => {
-    const piece = document.createElement("div");
-    piece.className = "piece";
-    piece.draggable = true;
-    piece.dataset.index = num;
-
-    piece.style.backgroundImage = "url('./puzzle.png')";
-    piece.style.backgroundSize = "300px 300px";
-    piece.style.backgroundPosition = `${-(num % 3) * 100}px ${-Math.floor(num / 3) * 100}px`;
-    piece.style.border = "1px solid #fff";
-
-    puzzle.appendChild(piece);
-  });
-
-  let dragged = null;
-
-  document.querySelectorAll(".piece").forEach((piece) => {
-    piece.addEventListener("dragstart", () => {
-      dragged = piece;
-    });
-
-    piece.addEventListener("dragover", (e) => {
-      e.preventDefault();
-    });
-
-    piece.addEventListener("drop", () => {
-      if (!dragged || dragged === piece) return;
-
-      const tempIndex = dragged.dataset.index;
-      const tempBg = dragged.style.backgroundPosition;
-
-      dragged.dataset.index = piece.dataset.index;
-      dragged.style.backgroundPosition = piece.style.backgroundPosition;
-
-      piece.dataset.index = tempIndex;
-      piece.style.backgroundPosition = tempBg;
-
-      checkPuzzleComplete(missionId);
-    });
-  });
 }
 
-async function checkPuzzleComplete(missionId) {
-  const pieces = document.querySelectorAll(".piece");
-  const complete = Array.from(pieces).every((piece, index) => {
-    return Number(piece.dataset.index) === index;
-  });
+window.completeMission1 = function () {
 
-  if (complete) {
-    progress[missionId] = true;
-    await saveProgress();
+  missions.mission1 = true;
 
-    app.innerHTML = `
-      <div class="page">
-        <h2>미션 완료!</h2>
-        <p>퍼즐을 완성했습니다.</p>
+  alert("미션 1 완료!");
 
-        <img src="./puzzle.png" style="width:300px; max-width:90%; border-radius:20px; margin:20px auto; display:block;">
+  renderHome();
+};
 
-        <button class="main-btn" onclick="renderHome()">확인</button>
-      </div>
-    `;
-  }
-}
-
-function renderBlankMission(missionId) {
-  const mission = missions[missionId];
+function renderMission2() {
 
   app.innerHTML = `
-    <div class="page">
+    <div style="padding:20px; text-align:center;">
+
       <h2>미션 2</h2>
-      <p>${mission.question}</p>
 
-      <input id="answerInput" placeholder="정답 입력" style="padding:15px; font-size:20px; width:80%; text-align:center; border-radius:12px; border:1px solid #ccc;">
+      <p style="font-size:24px;">
+        아무것도 ____하지 마십시오.
+      </p>
 
-      <button class="main-btn" onclick="checkBlankAnswer('${missionId}')">정답 확인</button>
-      <button class="reset-btn" onclick="renderHome()">돌아가기</button>
+      <input
+        id="answer"
+        placeholder="정답 입력"
+        style="
+          padding:15px;
+          font-size:20px;
+          border-radius:12px;
+          border:1px solid #ccc;
+          width:80%;
+          max-width:300px;
+          text-align:center;
+        "
+      >
+
+      <br><br>
+
+      <button onclick="checkMission2()" style="
+        padding:15px 30px;
+        font-size:20px;
+        border:none;
+        border-radius:15px;
+        background:#4caf50;
+        color:white;
+      ">
+        정답 확인
+      </button>
+
     </div>
   `;
 }
 
-window.checkBlankAnswer = async function (missionId) {
-  const input = document.getElementById("answerInput").value.trim();
-  const answer = missions[missionId].answer;
+window.checkMission2 = function () {
 
-  if (input === answer) {
-    progress[missionId] = true;
-    await saveProgress();
+  const answer = document
+    .getElementById("answer")
+    .value
+    .trim();
 
-    app.innerHTML = `
-      <div class="page">
-        <h2>미션 완료!</h2>
-        <p>정답입니다.</p>
-        <button class="main-btn" onclick="renderHome()">확인</button>
-      </div>
-    `;
+  if (answer === "걱정") {
+
+    missions.mission2 = true;
+
+    alert("미션 2 완료!");
+
+    renderHome();
+
   } else {
-    alert("다시 생각해보세요!");
+
+    alert("틀렸습니다!");
   }
 };
 
 window.showMap = function () {
-  alert("지도는 여기에 연결하면 됩니다.");
+
+  alert("여기에 지도 연결 예정");
 };
 
-window.resetGame = async function () {
-  if (!confirm("정말 처음부터 다시 시작할까요?")) return;
+window.resetGame = function () {
 
-  progress = {
-    mission1: false,
-    mission2: false,
-  };
+  if (confirm("처음부터 다시할까요?")) {
 
-  await saveProgress();
-  renderHome();
+    missions.mission1 = false;
+    missions.mission2 = false;
+
+    renderHome();
+  }
 };
 
 window.renderHome = renderHome;
 
-loadProgress().then(() => {
-  renderHome();
-});
+renderHome();
