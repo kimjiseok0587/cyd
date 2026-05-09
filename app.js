@@ -202,6 +202,32 @@ function handleQrResult(qrText) {
 }
 
 function extractMissionNumber(text) {
+  const t = text.trim().toLowerCase();
+
+  if (
+    t.includes("mission=1") ||
+    t.includes("mission1") ||
+    t.includes("mission_01") ||
+    t.includes("mission01") ||
+    t.includes("mission-01")
+  ) {
+    return 1;
+  }
+
+  if (
+    t.includes("mission=2") ||
+    t.includes("mission2") ||
+    t.includes("mission_02") ||
+    t.includes("mission02") ||
+    t.includes("mission-02") ||
+    t.includes("mission_2") ||
+    t.includes("mission-2")
+  ) {
+    return 2;
+  }
+
+  return null;
+}
   if (text.includes("mission=1")) return 1;
   if (text.includes("mission=2")) return 2;
   if (text.includes("mission1")) return 1;
