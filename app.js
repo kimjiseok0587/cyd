@@ -25,6 +25,9 @@ let html5QrCode = null;
 let userInfo = JSON.parse(localStorage.getItem("userInfo")) || null;
 let completedMissions = JSON.parse(localStorage.getItem("completedMissions")) || [];
 
+let puzzleOrder = [];
+let selectedPiece = null;
+
 function saveUserInfo(info) {
   localStorage.setItem("userInfo", JSON.stringify(info));
 }
@@ -178,14 +181,14 @@ function openMission(num) {
   hideAllSections();
 
   if (num === 1) {
-    showMission1();
+    showPuzzleMission();
     return;
   }
 
   showMissionPlaceholder(num);
 }
 
-function showMission1() {
+function showPuzzleMission() {
   puzzleSection.style.display = "block";
 
   puzzleSection.innerHTML = `
@@ -196,14 +199,121 @@ function showMission1() {
 
     <p id="puzzleMessage"></p>
 
-    <button class="main-button qr-button" id="completeMission1Btn">
-      미션 완료하기
+    <button class="main-button map-button" id="shufflePuzzleBtn">
+      다시 섞기
     </button>
   `;
 
-  document.getElementById("completeMission1Btn").addEventListener("click", () => {
-    completeMission(1);
+  createPuzzle();
+
+  document.getElementById("shufflePuzzleBtn").addEventListener("click", () => {
+    createPuzzle();
   });
+}
+
+function createPuzzle() {
+  const puzzleBoard = document.getElementById("puzzleBoard");
+  const puzzleMessage = document.getElementById("puzzleMessage");
+
+  puzzleOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  selectedPiece = null;
+
+  do {
+    puzzleOrder = shuffleArray([...puzzleOrder]);
+  } while (isPuzzleSolved());
+
+  puzzleBoard.innerHTML = "";
+  puzzleMessage.textContent = "";
+
+  puzzleBoard.style.display = "grid";
+  puzzleBoard.style.gridTemplateColumns = "repeat(3, 1fr)";
+  puzzleBoard.style.gap = "4px";
+  puzzleBoard.style.width = "300px";
+  puzzleBoard.style.height = "300px";
+  puzzleBoard.style.margin = "18px auto";
+  puzzleBoard.style.border = "3px solid #8b5e34";
+  puzzleBoard.style.background = "#8b5e34";
+
+  renderPuzzlePieces();
+}
+
+function renderPuzzlePieces() {
+  const puzzleBoard = document.getElementById("puzzleBoard");
+
+  puzzleBoard.innerHTML = "";
+
+  puzzleOrder.forEach((pieceNumber, currentIndex) => {
+    const piece = document.createElement("div");
+
+    piece.className = "puzzle-piece";
+    piece.dataset.index = currentIndex;
+
+    const row = Math.floor(pieceNumber / 3);
+    const col = pieceNumber % 3;
+
+    piece.style.width = "100%";
+    piece.style.height = "100%";
+    piece.style.backgroundImage = "url('puzzle.png')";
+    piece.style.backgroundSize = "300px 300px";
+    piece.style.backgroundPosition = `-${col * 100}px -${row * 100}px`;
+    piece.style.cursor = "pointer";
+    piece.style.border = "1px solid #fff8e8";
+
+    if (selectedPiece === currentIndex) {
+      piece.style.outline = "4px solid #ffcc00";
+      piece.style.zIndex = "2";
+    }
+
+    piece.addEventListener("click", () => {
+      handlePieceClick(currentIndex);
+    });
+
+    puzzleBoard.appendChild(piece);
+  });
+}
+
+function handlePieceClick(index) {
+  if (selectedPiece === null) {
+    selectedPiece = index;
+    renderPuzzlePieces();
+    return;
+  }
+
+  if (selectedPiece === index) {
+    selectedPiece = null;
+    renderPuzzlePieces();
+    return;
+  }
+
+  const temp = puzzleOrder[selectedPiece];
+  puzzleOrder[selectedPiece] = puzzleOrder[index];
+  puzzleOrder[index] = temp;
+
+  selectedPiece = null;
+  renderPuzzlePieces();
+
+  if (isPuzzleSolved()) {
+    const puzzleMessage = document.getElementById("puzzleMessage");
+
+    puzzleMessage.textContent = "퍼즐 완성! 1번 미션 완료!";
+    completeMission(1);
+  }
+}
+
+function isPuzzleSolved() {
+  return puzzleOrder.every((pieceNumber, index) => pieceNumber === index);
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+
+    const temp = array[i];
+    array[i] = array[randomIndex];
+    array[randomIndex] = temp;
+  }
+
+  return array;
 }
 
 function showMissionPlaceholder(num) {
