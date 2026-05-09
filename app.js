@@ -189,19 +189,17 @@ window.startQR = function () {
 };
 
 function handleQR(text) {
-  if (text.includes("mission1")) {
+  alert("읽힌 QR 내용: " + text);
+
+  if (
+    text.includes("mission1") ||
+    text.includes("미션1") ||
+    text.includes("m1")
+  ) {
     renderMission1();
     return;
   }
 
-  if (text.includes("mission2")) {
-    renderMission2();
-    return;
-  }
-
-  alert("등록되지 않은 QR입니다.");
-  renderHome();
-}
 
 function renderMission1() {
   if (progress.mission1) {
