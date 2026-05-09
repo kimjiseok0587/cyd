@@ -10,7 +10,9 @@
 </head>
 <body>
 
-  <div class="container">
+  <!-- 로그인 화면 -->
+  <div class="container" id="loginBox">
+
     <h1>야외 방탈출 미션</h1>
 
     <p>이름과 세례명을 입력하세요</p>
@@ -19,9 +21,25 @@
 
     <input type="text" id="baptismName" placeholder="세례명" />
 
-    <button onclick="login()">
+    <input type="text" id="team" placeholder="팀 이름" />
+
+    <button id="enterBtn">
       시작하기
     </button>
+
+  </div>
+
+  <!-- 메인 화면 -->
+  <div class="container" id="mainBox" style="display:none;">
+
+    <h1>미션 입장 완료</h1>
+
+    <h2 id="welcomeText"></h2>
+
+    <button id="resetBtn">
+      초기화
+    </button>
+
   </div>
 
   <script type="module" src="app.js"></script>
