@@ -560,7 +560,7 @@ function renderQrScanner() {
 
   qrScanner.start(
     {
-      facingMode: "user"
+      facingMode: "environment"
     },
     {
       fps: 10,
