@@ -1,4 +1,5 @@
 // app.js 전체 교체용
+// 이름/세례명 입력 → 미션 여권 → QR 스캔 → 미션 완료 → Firebase 저장
 
 const missions = [
   {
@@ -19,10 +20,21 @@ const missions = [
   },
 ];
 
+let participant = JSON.parse(localStorage.getItem("participant") || "null");
 let completedMissions = JSON.parse(localStorage.getItem("completedMissions") || "[]");
 let currentMission = null;
 
 const app = document.getElementById("app");
+
+function saveParticipant(name, baptism) {
+  participant = {
+    name,
+    baptism,
+    startedAt: new Date().toISOString(),
+  };
+
+  localStorage.setItem("participant", JSON.stringify(participant));
+}
 
 function saveProgress() {
   localStorage.setItem("completedMissions", JSON.stringify(completedMissions));
@@ -32,27 +44,93 @@ function isCompleted(id) {
   return completedMissions.includes(id);
 }
 
-function completeMission(id) {
+async function saveToFirebase(missionId) {
+  if (!participant) return;
+
+  try {
+    if (typeof db === "undefined") {
+      console.warn("Firebase db가 연결되지 않았습니다.");
+      return;
+    }
+
+    await db.collection("participants").add({
+      name: participant.name,
+      baptism: participant.baptism,
+      missionId: missionId,
+      completedAt: new Date().toISOString(),
+    });
+
+    console.log("Firebase 저장 완료");
+  } catch (error) {
+    console.error("Firebase 저장 오류:", error);
+    alert("미션은 완료됐지만, 데이터 저장 중 오류가 발생했습니다.");
+  }
+}
+
+async function completeMission(id) {
   if (!completedMissions.includes(id)) {
     completedMissions.push(id);
     saveProgress();
+    await saveToFirebase(id);
   }
+
   showCompleteScreen(id);
 }
 
 function resetProgress() {
-  if (confirm("정말 처음부터 다시 시작할까요?")) {
+  if (confirm("정말 처음부터 다시 시작할까요? 이름/세례명과 미션 기록이 이 기기에서 삭제됩니다.")) {
+    participant = null;
     completedMissions = [];
+    localStorage.removeItem("participant");
     localStorage.removeItem("completedMissions");
-    renderHome();
+    renderStart();
   }
 }
 
-function renderHome() {
+function renderStart() {
   app.innerHTML = `
     <div class="container">
       <h1>청소년 대회 미션 여권</h1>
-      <p class="subtitle">QR을 스캔해서 미션을 수행하세요.</p>
+      <p class="subtitle">이름과 세례명을 입력하고 시작하세요.</p>
+
+      <div class="mission-box">
+        <input id="nameInput" class="answer-input" placeholder="이름" />
+        <input id="baptismInput" class="answer-input" placeholder="세례명" />
+
+        <button class="main-btn" onclick="startGame()">시작하기</button>
+      </div>
+    </div>
+  `;
+}
+
+function startGame() {
+  const name = document.getElementById("nameInput").value.trim();
+  const baptism = document.getElementById("baptismInput").value.trim();
+
+  if (!name) {
+    alert("이름을 입력해주세요.");
+    return;
+  }
+
+  if (!baptism) {
+    alert("세례명을 입력해주세요.");
+    return;
+  }
+
+  saveParticipant(name, baptism);
+  renderHome();
+}
+
+function renderHome() {
+  if (!participant) {
+    renderStart();
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="container">
+      <h1>청소년 대회 미션 여권</h1>
+      <p class="subtitle">${participant.name} ${participant.baptism}</p>
 
       <div class="progress-box">
         <div class="progress-text">
@@ -116,7 +194,7 @@ function handleQRCode(qrText) {
   const mission = findMissionByQR(qrText);
 
   if (!mission) {
-    alert("등록되지 않은 QR코드입니다.");
+    alert("등록되지 않은 QR코드입니다.\n스캔된 내용: " + qrText);
     renderHome();
     return;
   }
@@ -135,7 +213,6 @@ function startQRScan() {
   `;
 
   const html5QrCode = new Html5Qrcode("reader");
-
   window.currentQrScanner = html5QrCode;
 
   html5QrCode
@@ -324,4 +401,8 @@ function shuffleArray(array) {
   }
 }
 
-renderHome();
+if (participant) {
+  renderHome();
+} else {
+  renderStart();
+}
