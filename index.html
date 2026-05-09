@@ -12,40 +12,41 @@
 
   <!-- 로그인 화면 -->
   <div class="container" id="loginBox">
-
     <h1>야외 방탈출 미션</h1>
 
     <p>이름과 세례명을 입력하세요</p>
 
     <input type="text" id="name" placeholder="이름" />
-
     <input type="text" id="baptismName" placeholder="세례명" />
-
     <input type="text" id="team" placeholder="팀 이름" />
 
-    <button id="enterBtn">
-      시작하기
-    </button>
-
+    <button id="enterBtn">시작하기</button>
   </div>
 
   <!-- 메인 화면 -->
   <div class="container" id="mainBox" style="display:none;">
-
-    <h1>미션 입장 완료</h1>
+    <h1>야외 방탈출 미션</h1>
 
     <h2 id="welcomeText"></h2>
 
-    <h2>1번 미션: 퍼즐 맞추기</h2>
+    <div class="status-box">
+      <p id="missionCount"></p>
+      <div id="stampBoard"></div>
+    </div>
 
-<div id="puzzleBoard"></div>
+    <p id="mainGuide">QR코드를 찾아 미션을 수행하세요.</p>
 
-<p id="puzzleMessage"></p>
+    <!-- 퍼즐 미션 화면 -->
+    <div id="puzzleSection" style="display:none;">
+      <h2>1번 미션: 퍼즐 맞추기</h2>
+      <p>사진 조각을 눌러 서로 바꾸며 퍼즐을 완성하세요.</p>
 
-    <button id="resetBtn">
-      초기화
-    </button>
+      <div id="puzzleBoard"></div>
 
+      <p id="puzzleMessage"></p>
+    </div>
+
+    <button id="resetBtn">처음부터 다시하기</button>
   </div>
 
   <script type="module" src="app.js"></script>
