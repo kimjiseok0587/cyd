@@ -293,5 +293,6 @@ window.resetGame = async function () {
 
 window.renderHome = renderHome;
 
-await loadProgress();
-renderHome();
+loadProgress().then(() => {
+  renderHome();
+});
