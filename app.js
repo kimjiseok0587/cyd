@@ -473,9 +473,14 @@ function renderHome() {
   document.getElementById("mapBtn").onclick =
     renderMap;
 
-  document.getElementById("resetBtn").onclick = () => {
+document.getElementById("resetBtn").onclick = () => {
+
   if (confirm("로그인 화면으로 돌아갈까요?")) {
+
+    stopQrScanner();
+
     currentUser = null;
+
     localStorage.removeItem("gamgokUser");
 
     renderLogin();
