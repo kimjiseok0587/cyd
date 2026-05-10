@@ -9,6 +9,19 @@ body {
   color: #3b2a1a;
 }
 
+a {
+  color: #3b2a1a;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #3b2a1a;
+}
+
+a:hover {
+  color: #8b5e34;
+}
+
 .container {
   min-height: 100vh;
   padding: 28px 20px;
