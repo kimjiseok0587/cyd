@@ -2330,7 +2330,11 @@ let mission10Answer = [];
 
 window.selectWord = function(word) {
 
-  mission10Answer.push(word);
+  if (mission10Answer.includes(word)) {
+    mission10Answer = mission10Answer.filter(w => w !== word);
+  } else {
+    mission10Answer.push(word);
+  }
 
   document.getElementById("answer-area").innerHTML =
     mission10Answer.map(w => `
@@ -2548,7 +2552,11 @@ let mission14Answer = [];
 
 window.selectMission14Word = function(word) {
 
-  mission14Answer.push(word);
+  if (mission14Answer.includes(word)) {
+    mission14Answer = mission14Answer.filter(w => w !== word);
+  } else {
+    mission14Answer.push(word);
+  }
 
   document.getElementById("mission14-answer").innerHTML =
     mission14Answer.map(w => `
