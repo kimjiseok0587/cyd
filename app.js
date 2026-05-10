@@ -39,6 +39,11 @@ const MISSIONS = {
   mission05: {
     title: "미션 5",
     qr: "gamgok_mission_05"
+  },
+
+  mission06: {
+    title: "미션 6",
+    qr: "gamgok_mission_06"
   }
 };
 
@@ -410,6 +415,36 @@ function injectStyle() {
         color: #b53b3b;
       }
 
+      .date-box {
+        margin-top: 20px;
+        padding: 18px;
+        border-radius: 20px;
+        background: #fff9eb;
+      }
+
+      .date-box h2 {
+        margin: 0 0 12px;
+        font-size: 22px;
+      }
+
+      .date-row {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr auto 1fr auto;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .date-row select {
+        width: 100%;
+        padding: 12px 6px;
+        border-radius: 12px;
+        border: 1px solid #c6b28f;
+        font-size: 18px;
+        font-weight: 800;
+        text-align: center;
+        background: white;
+      }
+
     </style>
   `
   );
@@ -723,6 +758,11 @@ function onScanSuccess(decodedText) {
     return;
   }
 
+  if (qr === "gamgok_mission_06") {
+    renderMission06();
+    return;
+  }
+
   try {
     const url = new URL(qr);
     const mission = url.searchParams.get("mission");
@@ -749,6 +789,11 @@ function onScanSuccess(decodedText) {
 
     if (mission === "5") {
       renderMission05();
+      return;
+    }
+
+    if (mission === "6") {
+      renderMission06();
       return;
     }
   } catch (e) {}
@@ -1610,6 +1655,212 @@ function renderMission05() {
 
   document.getElementById("homeBtn").onclick =
     renderHome;
+}
+
+function renderMission06() {
+  if (
+    completedMissions.includes(
+      "mission06"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+
+        <div class="card">
+
+          <h1>
+            미션 6 완료
+          </h1>
+
+          <p>
+            이미 완료한 미션입니다.
+          </p>
+
+          <button
+            id="homeBtn"
+          >
+            메인으로
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 6
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          임가밀로 신부님이 태어나신 날과<br>
+          돌아가신 날은?
+        </p>
+
+        <div class="date-box">
+          <h2>태어나신 날</h2>
+
+          <div class="date-row">
+            <select id="birthYear"></select>
+            <span>년</span>
+
+            <select id="birthMonth"></select>
+            <span>월</span>
+
+            <select id="birthDay"></select>
+            <span>일</span>
+          </div>
+        </div>
+
+        <div class="date-box">
+          <h2>돌아가신 날</h2>
+
+          <div class="date-row">
+            <select id="deathYear"></select>
+            <span>년</span>
+
+            <select id="deathMonth"></select>
+            <span>월</span>
+
+            <select id="deathDay"></select>
+            <span>일</span>
+          </div>
+        </div>
+
+        <button
+          id="mission06SubmitBtn"
+          style="
+            margin-top:18px;
+            width:100%;
+            background:#5a351b;
+            color:white;
+          "
+        >
+          정답 확인
+        </button>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  fillSelect("birthYear", 1800, 2000, 1800);
+  fillSelect("birthMonth", 1, 12, 1);
+  fillSelect("birthDay", 1, 31, 1);
+
+  fillSelect("deathYear", 1800, 2000, 1800);
+  fillSelect("deathMonth", 1, 12, 1);
+  fillSelect("deathDay", 1, 31, 1);
+
+  document.getElementById("mission06SubmitBtn").onclick = () => {
+    const birthYear =
+      document.getElementById("birthYear").value;
+
+    const birthMonth =
+      document.getElementById("birthMonth").value;
+
+    const birthDay =
+      document.getElementById("birthDay").value;
+
+    const deathYear =
+      document.getElementById("deathYear").value;
+
+    const deathMonth =
+      document.getElementById("deathMonth").value;
+
+    const deathDay =
+      document.getElementById("deathDay").value;
+
+    if (
+      birthYear === "1869" &&
+      birthMonth === "12" &&
+      birthDay === "19" &&
+      deathYear === "1947" &&
+      deathMonth === "10" &&
+      deathDay === "25"
+    ) {
+      completeMission("mission06");
+
+      app.innerHTML = `
+        <div class="page">
+
+          <div class="card">
+
+            <h1>
+              미션 완료!
+            </h1>
+
+            <p>
+              정답입니다!<br>
+              임가밀로 신부님은 1869년 12월 19일에 태어나시고,<br>
+              1947년 10월 25일에 돌아가셨습니다.
+            </p>
+
+            <button
+              id="homeBtn"
+            >
+              메인으로
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+      document.getElementById("homeBtn").onclick =
+        renderHome;
+
+    } else {
+      alert("틀렸습니다. 다시 맞춰보세요.");
+    }
+  };
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+function fillSelect(id, start, end, selectedValue) {
+  const select =
+    document.getElementById(id);
+
+  for (
+    let i = start;
+    i <= end;
+    i++
+  ) {
+    const option =
+      document.createElement("option");
+
+    option.value =
+      String(i);
+
+    option.textContent =
+      String(i);
+
+    if (i === selectedValue) {
+      option.selected = true;
+    }
+
+    select.appendChild(option);
+  }
 }
 
 function shuffle(array) {
