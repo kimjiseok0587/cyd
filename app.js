@@ -2457,7 +2457,7 @@ function renderMission12() {
 
 window.checkMission12 = function(answer) {
   if (answer === 5) {
-    completeMission("mission012");
+    completeMission("mission12");
   } else {
     alert("틀렸습니다!");
   }
