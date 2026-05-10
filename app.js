@@ -599,6 +599,49 @@ function renderHome() {
   const percent =
     Math.round((done / total) * 100);
 
+
+
+  if (percent === 100) {
+    app.innerHTML = `
+      <div class="page">
+        <div class="card">
+
+          <h1 style="font-size:34px; line-height:1.4;">
+            🎉 모든 미션 완료!
+          </h1>
+
+          <p style="font-size:24px; font-weight:900; line-height:1.7;">
+            드디어 모든 미션을 완료하였군!!<br>
+            잘하였다!!
+          </p>
+
+          <p style="font-size:22px; font-weight:800; line-height:1.7;">
+            미션을 완료하였으니<br>
+            박물관 앞 초 봉헌대로 오시오.
+          </p>
+
+          <button
+            id="resetBtn"
+            class="back-btn"
+            style="margin-top:18px;width:100%;"
+          >
+            처음으로
+          </button>
+
+        </div>
+      </div>
+    `;
+
+    document.getElementById("resetBtn").onclick = () => {
+      currentUser = null;
+      completedMissions = [];
+      localStorage.removeItem("gamgokUser");
+      renderLogin();
+    };
+
+    return;
+  }
+  
   app.innerHTML = `
     <div class="page">
 
