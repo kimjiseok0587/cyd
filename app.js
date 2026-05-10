@@ -803,6 +803,12 @@ function onScanSuccess(decodedText) {
   const qr =
     decodedText.trim();
 
+
+    if (qr === "gamgok_mission_fail") {
+  renderFailQr();
+  return;
+}
+
   if (qr === "gamgok_mission_01") {
     renderPuzzleMission();
     return;
@@ -902,6 +908,8 @@ if (qr === "gamgok_mission_20") {
   renderMission20();
   return;
 }
+
+
 
   try {
     const url = new URL(qr);
@@ -3436,4 +3444,44 @@ if (currentUser) {
 
 } else {
   renderLogin();
+}
+
+function renderFailQr() {
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <img
+          src="./common.jpeg"
+          class="complete-img"
+        />
+
+        <p style="
+          margin-top:18px;
+          font-size:24px;
+          font-weight:900;
+        ">
+          힝! 속았지? 😜
+        </p>
+
+        <button
+          id="scanAgainBtn"
+          style="
+            margin-top:20px;
+            width:100%;
+            background:#5a351b;
+            color:white;
+          "
+        >
+          다시 QR 스캔하기
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("scanAgainBtn").onclick =
+    renderQrScanner;
 }
