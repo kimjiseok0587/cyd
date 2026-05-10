@@ -838,6 +838,71 @@ function onScanSuccess(decodedText) {
   return;
 }
 
+if (qr === "gamgok_mission_08") {
+  renderMission08();
+  return;
+}
+
+if (qr === "gamgok_mission_09") {
+  renderMission09();
+  return;
+}
+
+if (qr === "gamgok_mission_10") {
+  renderMission10();
+  return;
+}
+
+if (qr === "gamgok_mission_11") {
+  renderMission11();
+  return;
+}
+
+if (qr === "gamgok_mission_12") {
+  renderMission12();
+  return;
+}
+
+if (qr === "gamgok_mission_13") {
+  renderMission13();
+  return;
+}
+
+if (qr === "gamgok_mission_14") {
+  renderMission14();
+  return;
+}
+
+if (qr === "gamgok_mission_15") {
+  renderMission15();
+  return;
+}
+
+if (qr === "gamgok_mission_16") {
+  renderMission16();
+  return;
+}
+
+if (qr === "gamgok_mission_17") {
+  renderMission17();
+  return;
+}
+
+if (qr === "gamgok_mission_18") {
+  renderMission18();
+  return;
+}
+
+if (qr === "gamgok_mission_19") {
+  renderMission19();
+  return;
+}
+
+if (qr === "gamgok_mission_20") {
+  renderMission20();
+  return;
+}
+
   try {
     const url = new URL(qr);
     const mission = url.searchParams.get("mission");
@@ -871,6 +936,77 @@ function onScanSuccess(decodedText) {
       renderMission06();
       return;
     }
+
+    if (mission === "7") {
+  renderMission07();
+  return;
+}
+
+if (mission === "8") {
+  renderMission08();
+  return;
+}
+
+if (mission === "9") {
+  renderMission09();
+  return;
+}
+
+if (mission === "10") {
+  renderMission10();
+  return;
+}
+
+if (mission === "11") {
+  renderMission11();
+  return;
+}
+
+if (mission === "12") {
+  renderMission12();
+  return;
+}
+
+if (mission === "13") {
+  renderMission13();
+  return;
+}
+
+if (mission === "14") {
+  renderMission14();
+  return;
+}
+
+if (mission === "15") {
+  renderMission15();
+  return;
+}
+
+if (mission === "16") {
+  renderMission16();
+  return;
+}
+
+if (mission === "17") {
+  renderMission17();
+  return;
+}
+
+if (mission === "18") {
+  renderMission18();
+  return;
+}
+
+if (mission === "19") {
+  renderMission19();
+  return;
+}
+
+if (mission === "20") {
+  renderMission20();
+  return;
+}
+
   } catch (e) {}
 
   alert(
@@ -2030,6 +2166,123 @@ window.checkMission07 = function(choice) {
     alert("틀렸습니다. 다시 선택해보세요.");
   }
 };
+
+function renderMission08() {
+  if (
+    completedMissions.includes(
+      "mission08"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+        <div class="card">
+
+          <h1>
+            미션 8 완료
+          </h1>
+
+          <p>
+            이미 완료한 미션입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 8
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          감곡성당에는 김대건 신부님의 유해가 있습니다.<br>
+          김대건 신부님의 어느 부위인가요?
+        </p>
+
+        <input
+          id="mission08Answer"
+          placeholder="정답 입력"
+        />
+
+        <button
+          id="mission08SubmitBtn"
+          style="margin-top:18px;width:100%;background:#5a351b;color:white;"
+        >
+          정답 확인
+        </button>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("mission08SubmitBtn").onclick = () => {
+    const answer =
+      document.getElementById("mission08Answer")
+      .value
+      .trim()
+      .replace(/\s/g, "");
+
+    if (answer === "척추뼈") {
+      completeMission("mission08");
+
+      app.innerHTML = `
+        <div class="page">
+
+          <div class="card">
+
+            <h1>
+              미션 완료!
+            </h1>
+
+            <p>
+              정답입니다!<br>
+              김대건 신부님의 유해는 척추뼈입니다.
+            </p>
+
+            <button id="homeBtn">
+              메인으로
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+      document.getElementById("homeBtn").onclick =
+        renderHome;
+
+    } else {
+      alert("틀렸습니다. 다시 입력해보세요.");
+    }
+  };
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
 
 function fillSelect(id, start, end, selectedValue) {
   const select =
