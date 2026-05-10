@@ -2433,6 +2433,38 @@ window.checkMission11 = function() {
   }
 };
 
+function renderMission11() {
+  app.innerHTML = `
+    <div class="mission-box">
+      <h2>미션 11</h2>
+
+      <p>
+        성당 종탑에 시계가 있습니다.<br><br>
+        그런데 진짜 시계가 아니라 그림으로 그려진 시계입니다 😂<br><br>
+        그렇다면 그림으로 그려져 있지 않은 시간은 언제일까요?
+      </p>
+
+      <div class="quiz-options">
+        <button onclick="checkMission11(1)">1. 3시</button>
+        <button onclick="checkMission11(2)">2. 6시</button>
+        <button onclick="checkMission11(3)">3. 9시</button>
+        <button onclick="checkMission11(4)">4. 11시 55분</button>
+        <button onclick="checkMission11(5)">5. 12시</button>
+      </div>
+    </div>
+  `;
+}
+
+window.checkMission11 = function(answer) {
+  if (answer === 5) {
+    completeMission(11);
+  } else {
+    alert("틀렸습니다!");
+  }
+};
+
+
+여기 위에 문제 추가하면 됨
 function fillSelect(id, start, end, selectedValue) {
   const select =
     document.getElementById(id);
