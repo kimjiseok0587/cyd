@@ -2318,7 +2318,67 @@ window.checkMission09 = function(answer) {
   }
 };
 
+function renderMission10() {
 
+  const words = ["성당", "감곡", "순례지", "매괴", "성모"];
+
+  app.innerHTML = `
+    <div class="mission-box">
+      <h2>미션 10</h2>
+
+      <p>
+        2006년 10월 7일 장봉훈 가브리엘 주교님이 승인하고 선포한 곳의 이름을
+        순서대로 배열하세요.
+      </p>
+
+      <div id="word-bank" class="word-bank">
+        ${words.map(word => `
+          <button class="word-btn" onclick="selectWord('${word}')">
+            ${word}
+          </button>
+        `).join("")}
+      </div>
+
+      <h3>배열한 답</h3>
+
+      <div id="answer-area" class="answer-area"></div>
+
+      <button class="submit-btn" onclick="checkMission10()">
+        정답 확인
+      </button>
+    </div>
+  `;
+}
+
+let mission10Answer = [];
+
+window.selectWord = function(word) {
+
+  mission10Answer.push(word);
+
+  document.getElementById("answer-area").innerHTML =
+    mission10Answer.map(w => `
+      <span class="answer-word">${w}</span>
+    `).join("");
+};
+
+window.checkMission10 = function() {
+
+  const correct =
+    "감곡매괴성모순례지성당";
+
+  const userAnswer =
+    mission10Answer.join("");
+
+  if (userAnswer === correct) {
+
+    completeMission(10);
+
+  } else {
+
+    alert("순서가 틀렸습니다!");
+  }
+};
 
 function fillSelect(id, start, end, selectedValue) {
   const select =
