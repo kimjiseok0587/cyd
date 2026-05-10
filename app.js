@@ -1067,10 +1067,7 @@ function renderPuzzleMission() {
 
       <div class="card">
 
-        <h1>
-          미션 1
-        </h1>
-
+    
         <p>
           퍼즐을 완성하세요
         </p>
