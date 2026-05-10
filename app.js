@@ -2668,6 +2668,731 @@ function showMissionComplete() {
     renderHome;
 }
 
+function renderMission15() {
+  app.innerHTML = `
+    <div class="page">
+      <div class="card">
+
+        <h1>
+          미션 15
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          다음 중 전대사에 대한 설명으로 틀린 것은 무엇인가요?
+        </p>
+
+        <div class="main-buttons">
+
+          <button onclick="checkMission15(1)">
+            1. 전대사는 죄에 따른 잠벌을 모두 면해주는 것이다.
+          </button>
+
+          <button onclick="checkMission15(2)">
+            2. 전대사는 세례받은 본인이 받을 수 있다.
+          </button>
+
+          <button onclick="checkMission15(3)">
+            3. 전대사는 죽은 연옥 영혼을 위해 양도할 수 있다.
+          </button>
+
+          <button onclick="checkMission15(4)">
+            4. 전대사는 죄 자체를 짓지 않아도 되게 만들어 준다.
+          </button>
+
+          <button onclick="checkMission15(5)">
+            5. 교회는 특별한 시기와 장소, 신심행위에 대해 전대사의 은총을 선포한다.
+          </button>
+
+        </div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+window.checkMission15 = function(answer) {
+  if (answer === 4) {
+    completeMission("mission15");
+    showMissionComplete();
+  } else {
+    alert("틀렸습니다!");
+  }
+};
+
+function renderMission16() {
+  app.innerHTML = `
+    <div class="page">
+      <div class="card">
+
+        <h1>
+          미션 16
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          매년 10월 첫째 주에 성체대회를 하는데,<br><br>
+
+          성체대회 3부에서 매산에 올라가<br>
+          OOO의 평화를 위하여 기도하나요?
+        </p>
+
+        <input
+          id="mission16Answer"
+          placeholder="정답 입력"
+          style="
+            margin-top:20px;
+            text-align:center;
+            font-size:22px;
+            font-weight:800;
+          "
+        />
+
+        <button
+          id="mission16SubmitBtn"
+          style="
+            margin-top:18px;
+            width:100%;
+            background:#5a351b;
+            color:white;
+          "
+        >
+          정답 확인
+        </button>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById("mission16SubmitBtn").onclick = () => {
+
+    const answer =
+      document.getElementById("mission16Answer")
+      .value
+      .replace(/\s/g, "")
+      .trim();
+
+    if (answer === "온세상") {
+
+      completeMission("mission16");
+
+      showMissionComplete();
+
+    } else {
+
+      alert("틀렸습니다!");
+
+    }
+  };
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+window.checkMission16 = function(answer) {
+  if (answer === "온세상") {
+    completeMission("mission16");
+    showMissionComplete();
+  } else {
+    alert("틀렸습니다!");
+  }
+};
+
+function renderMission17() {
+  if (
+    completedMissions.includes(
+      "mission17"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+        <div class="card">
+
+          <h1>
+            미션 17 완료
+          </h1>
+
+          <p>
+            이미 완료한 미션입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 17
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          1958년 충청북도 감곡대리구에서<br>
+          청주 대목구로 독립하는 과정에서<br>
+          사목을 맡게 된 곳은?
+        </p>
+
+        <div class="main-buttons">
+
+          <button onclick="checkMission17(1)">
+            1. 골롬반 외방선교회
+          </button>
+
+          <button onclick="checkMission17(2)">
+            2. 메리놀 외방전교회
+          </button>
+
+          <button onclick="checkMission17(3)">
+            3. 파리 외방 전교회
+          </button>
+
+          <button onclick="checkMission17(4)">
+            4. 살레시오회
+          </button>
+
+        </div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+window.checkMission17 = function(choice) {
+  if (choice === 2) {
+    completeMission("mission17");
+
+    app.innerHTML = `
+      <div class="page">
+
+        <div class="card">
+
+          <h1>
+            미션 완료!
+          </h1>
+
+          <p>
+            정답입니다!<br>
+            정답은 메리놀 외방전교회입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+  } else {
+    alert("틀렸습니다. 다시 선택해보세요.");
+  }
+};
+
+function renderMission18() {
+  if (
+    completedMissions.includes(
+      "mission18"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+        <div class="card">
+
+          <h1>
+            미션 18 완료
+          </h1>
+
+          <p>
+            이미 완료한 미션입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 18
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          성모광장은 일제시대 일본인들이<br>
+          무엇을 지으려고 했던 곳인가요?
+        </p>
+
+        <div class="main-buttons">
+
+          <button onclick="checkMission18(1)">
+            1. 학교
+          </button>
+
+          <button onclick="checkMission18(2)">
+            2. 관공서
+          </button>
+
+          <button onclick="checkMission18(3)">
+            3. 신사
+          </button>
+
+          <button onclick="checkMission18(4)">
+            4. 병원
+          </button>
+
+          <button onclick="checkMission18(5)">
+            5. 군사기지
+          </button>
+
+        </div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+window.checkMission18 = function(choice) {
+
+  if (choice === 3) {
+
+    completeMission("mission18");
+
+    app.innerHTML = `
+      <div class="page">
+
+        <div class="card">
+
+          <h1>
+            미션 완료!
+          </h1>
+
+          <p>
+            정답입니다!<br>
+            성모광장은 일제시대 일본인들이
+            신사를 지으려고 했던 곳입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+  } else {
+    alert("틀렸습니다. 다시 선택해보세요.");
+  }
+};
+
+function renderMission19() {
+  if (
+    completedMissions.includes(
+      "mission19"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+        <div class="card">
+
+          <h1>
+            미션 19 완료
+          </h1>
+
+          <p>
+            이미 완료한 미션입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  const words = [
+    "파티마",
+    "과달루페",
+    "메주고리에",
+    "마리아",
+    "루르드",
+    "마사비엘",
+    "성모발현동굴"
+  ];
+
+  let selectedWords = [];
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 19
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          감곡성당의 성모동굴은<br>
+          어디와 동일한 형태와 크기로 제작되었나요?
+        </p>
+
+        <div
+          id="selectedAnswer"
+          style="
+            min-height:80px;
+            margin-top:20px;
+            padding:15px;
+            border:2px dashed #8b5e34;
+            border-radius:16px;
+            font-size:22px;
+            font-weight:700;
+            line-height:1.6;
+            background:#fffaf0;
+          "
+        ></div>
+
+        <div
+          style="
+            margin-top:20px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            justify-content:center;
+          "
+        >
+          ${words.map(word => `
+            <button
+              class="word-btn"
+              onclick="selectMission19Word('${word}')"
+            >
+              ${word}
+            </button>
+          `).join("")}
+        </div>
+
+        <button
+          id="mission19SubmitBtn"
+          style="
+            margin-top:20px;
+            width:100%;
+            background:#5a351b;
+            color:white;
+          "
+        >
+          정답 확인
+        </button>
+
+        <button
+          id="mission19ResetBtn"
+          style="
+            margin-top:10px;
+            width:100%;
+          "
+        >
+          다시 선택
+        </button>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  window.selectMission19Word = function(word) {
+
+    selectedWords.push(word);
+
+    document.getElementById(
+      "selectedAnswer"
+    ).textContent =
+      selectedWords.join(" ");
+  };
+
+  document.getElementById(
+    "mission19ResetBtn"
+  ).onclick = () => {
+
+    selectedWords = [];
+
+    document.getElementById(
+      "selectedAnswer"
+    ).textContent = "";
+  };
+
+  document.getElementById(
+    "mission19SubmitBtn"
+  ).onclick = () => {
+
+    const answer =
+      selectedWords.join(" ");
+
+    if (
+      answer ===
+      "루르드 마사비엘 성모발현동굴"
+    ) {
+
+      completeMission("mission19");
+
+      app.innerHTML = `
+        <div class="page">
+
+          <div class="card">
+
+            <h1>
+              미션 완료!
+            </h1>
+
+            <p>
+              정답입니다!<br>
+              감곡성당의 성모동굴은<br>
+              루르드 마사비엘 성모발현동굴과
+              동일한 형태와 크기로 제작되었습니다.
+            </p>
+
+            <button id="homeBtn">
+              메인으로
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+      document.getElementById(
+        "homeBtn"
+      ).onclick =
+        renderHome;
+
+    } else {
+
+      alert(
+        "틀렸습니다. 다시 조합해보세요."
+      );
+    }
+  };
+
+  document.getElementById(
+    "homeBtn"
+  ).onclick =
+    renderHome;
+}
+
+
+function renderMission20() {
+  if (
+    completedMissions.includes(
+      "mission20"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+        <div class="card">
+
+          <h1>
+            미션 20 완료
+          </h1>
+
+          <p>
+            이미 완료한 미션입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 20
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.7;">
+          “고생하며 무거운 짐을 진 너희는 모두
+          나에게 오너라.<br>
+          내가 너희에게 안식을 주겠다.”<br><br>
+
+          어느 성경의 몇 장 몇 절일까요?
+        </p>
+
+        <div class="main-buttons">
+
+          <button onclick="checkMission20(1)">
+            1. 마태 11,28
+          </button>
+
+          <button onclick="checkMission20(2)">
+            2. 마르 10,45
+          </button>
+
+          <button onclick="checkMission20(3)">
+            3. 루카 15,7
+          </button>
+
+          <button onclick="checkMission20(4)">
+            4. 요한 14,6
+          </button>
+
+          <button onclick="checkMission20(5)">
+            5. 사도 2,38
+          </button>
+
+        </div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+window.checkMission20 = function(choice) {
+
+  if (choice === 1) {
+
+    completeMission("mission20");
+
+    app.innerHTML = `
+      <div class="page">
+
+        <div class="card">
+
+          <h1>
+            미션 완료!
+          </h1>
+
+          <p>
+            정답입니다!<br>
+            정답은 마태 11,28입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+  } else {
+    alert("틀렸습니다. 다시 선택해보세요.");
+  }
+};
+
 //여기 위에 문제 추가하면 됨
 function fillSelect(id, start, end, selectedValue) {
   const select =
