@@ -2380,6 +2380,59 @@ window.checkMission10 = function() {
   }
 };
 
+function renderMission11() {
+  app.innerHTML = `
+    <div class="mission-box">
+      <h2>미션 11</h2>
+
+      <p>
+        성체대회는 1914년부터 매년 거행해왔습니다.<br><br>
+
+        그런데 ??????에 5회를 못했습니다.<br><br>
+
+        언제일까요?
+      </p>
+
+      <input
+        type="text"
+        id="mission11Answer"
+        placeholder="정답 입력"
+        class="answer-input"
+      />
+
+      <br><br>
+
+      <button onclick="checkMission11()" class="submit-btn">
+        정답 확인
+      </button>
+    </div>
+  `;
+}
+
+window.checkMission11 = function() {
+
+  const answer =
+    document.getElementById("mission11Answer")
+      .value
+      .replace(/\s/g, "")
+      .trim();
+
+  const correctAnswers = [
+    "일제강점기말",
+    "일제강점기",
+    "일제강점기말기"
+  ];
+
+  if (correctAnswers.includes(answer)) {
+
+    completeMission(11);
+
+  } else {
+
+    alert("틀렸습니다!");
+  }
+};
+
 function fillSelect(id, start, end, selectedValue) {
   const select =
     document.getElementById(id);
