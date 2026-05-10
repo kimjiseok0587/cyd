@@ -529,7 +529,7 @@ function renderLogin() {
       <div class="login-card">
 
         <div class="main-title">
-          스탬프 투어
+          감곡의 역사를 찾아서
         </div>
 
         <div class="sub-title">
@@ -605,7 +605,7 @@ function renderHome() {
       <div class="passport-card">
 
         <div class="main-title">
-          미션 스탬프 투어
+          감곡의 역사를 찾아서
         </div>
 
         <div class="sub-title">
