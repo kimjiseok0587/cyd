@@ -2292,6 +2292,73 @@ window.checkMission09 = function(answer) {
   }
 };
 
+function renderMission09() {
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 9
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          임 가밀로 신부님이 태어나신 곳은 어디인가요?
+        </p>
+
+        <div class="main-buttons">
+
+          <button onclick="checkMission09(1)">
+            1. 프랑스 타르브교구 빌레아두르
+          </button>
+
+          <button onclick="checkMission09(2)">
+            2. 이탈리아 로마
+          </button>
+
+          <button onclick="checkMission09(3)">
+            3. 독일 베를린
+          </button>
+
+          <button onclick="checkMission09(4)">
+            4. 중국 상하이
+          </button>
+
+        </div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+window.checkMission09 = function(answer) {
+
+  if (answer === 1) {
+
+    completeMission("mission09");
+
+    showMissionComplete();
+
+  } else {
+
+    alert("틀렸습니다!");
+
+  }
+};
+
 function renderMission10() {
 
   mission10Answer = [];
