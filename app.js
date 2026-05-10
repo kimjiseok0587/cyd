@@ -2283,6 +2283,42 @@ function renderMission08() {
     renderHome;
 }
 
+function renderMission09() {
+  app.innerHTML = `
+    <div class="mission-box">
+      <h2>미션 9</h2>
+      <p>임 가밀로 신부님이 태어나신 곳은 어디인가요?</p>
+
+      <div class="quiz-options">
+        <button onclick="checkMission09(1)">
+          1. 프랑스 타르브교구 빌레아두르
+        </button>
+
+        <button onclick="checkMission09(2)">
+          2. 이탈리아 로마
+        </button>
+
+        <button onclick="checkMission09(3)">
+          3. 독일 베를린
+        </button>
+
+        <button onclick="checkMission09(4)">
+          4. 중국 상하이
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+window.checkMission09 = function(answer) {
+  if (answer === 1) {
+    completeMission(9);
+  } else {
+    alert("틀렸습니다!");
+  }
+};
+
+
 
 function fillSelect(id, start, end, selectedValue) {
   const select =
