@@ -2433,7 +2433,7 @@ window.checkMission11 = function() {
   }
 };
 
-function renderMission11() {
+function renderMission12() {
   app.innerHTML = `
     <div class="mission-box">
       <h2>미션 11</h2>
@@ -2455,14 +2455,83 @@ function renderMission11() {
   `;
 }
 
-window.checkMission11 = function(answer) {
+window.checkMission12 = function(answer) {
   if (answer === 5) {
-    completeMission(11);
+    completeMission(12);
   } else {
     alert("틀렸습니다!");
   }
 };
 
+function renderMission13() {
+  app.innerHTML = `
+    <div class="mission-box">
+      <h2>미션 13</h2>
+
+      <p>
+        감곡성당과 박물관 건물 앞을 보면<br>
+        건축한 년도가 적혀있습니다!<br><br>
+
+        성당 건축 년도와 박물관 건축 년도를<br>
+        합치면 얼마일까요?
+      </p>
+
+      <div class="date-box">
+        <h3>숫자를 맞춰보세요</h3>
+
+        <div class="date-select-row">
+
+          <select id="digit1">
+            ${[0,1,2,3,4,5,6,7,8,9]
+              .map(n => `<option value="${n}">${n}</option>`)
+              .join("")}
+          </select>
+
+          <select id="digit2">
+            ${[0,1,2,3,4,5,6,7,8,9]
+              .map(n => `<option value="${n}">${n}</option>`)
+              .join("")}
+          </select>
+
+          <select id="digit3">
+            ${[0,1,2,3,4,5,6,7,8,9]
+              .map(n => `<option value="${n}">${n}</option>`)
+              .join("")}
+          </select>
+
+          <select id="digit4">
+            ${[0,1,2,3,4,5,6,7,8,9]
+              .map(n => `<option value="${n}">${n}</option>`)
+              .join("")}
+          </select>
+
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="checkMission13()">
+        정답 확인
+      </button>
+    </div>
+  `;
+}
+
+window.checkMission13 = function() {
+
+  const answer =
+    document.getElementById("digit1").value +
+    document.getElementById("digit2").value +
+    document.getElementById("digit3").value +
+    document.getElementById("digit4").value;
+
+  if (answer === "3854") {
+
+    completeMission(13);
+
+  } else {
+
+    alert("틀렸습니다!");
+  }
+};
 
 여기 위에 문제 추가하면 됨
 function fillSelect(id, start, end, selectedValue) {
