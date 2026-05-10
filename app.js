@@ -29,6 +29,11 @@ const MISSIONS = {
   mission03: {
     title: "미션 3",
     qr: "gamgok_mission_03"
+  },
+
+  mission04: {
+    title: "미션 4",
+    qr: "gamgok_mission_04"
   }
 };
 
@@ -362,6 +367,44 @@ function injectStyle() {
         text-align: center;
       }
 
+      .line-game {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+        margin-top: 24px;
+      }
+
+      .line-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .match-btn {
+        background: #fff9eb;
+        color: #2d2118;
+        border: 2px solid #d4b987;
+      }
+
+      .match-btn.selected {
+        background: #ffd86b;
+        border-color: #8b5a2b;
+      }
+
+      .match-result {
+        margin-top: 18px;
+        font-size: 20px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .success-text {
+        color: #1d7a32;
+      }
+
+      .fail-text {
+        color: #b53b3b;
+      }
+
     </style>
   `
   );
@@ -665,6 +708,11 @@ function onScanSuccess(decodedText) {
     return;
   }
 
+  if (qr === "gamgok_mission_04") {
+    renderMission04();
+    return;
+  }
+
   try {
     const url = new URL(qr);
     const mission = url.searchParams.get("mission");
@@ -676,6 +724,11 @@ function onScanSuccess(decodedText) {
 
     if (mission === "3") {
       renderMission03();
+      return;
+    }
+
+    if (mission === "4") {
+      renderMission04();
       return;
     }
   } catch (e) {}
@@ -1182,6 +1235,228 @@ function renderMission03() {
   document.getElementById(
     "homeBtn"
   ).onclick =
+    renderHome;
+}
+
+function renderMission04() {
+  if (
+    completedMissions.includes(
+      "mission04"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+
+        <div class="card">
+
+          <h1>
+            미션 4 완료
+          </h1>
+
+          <p>
+            선 연결 미션을 완료했습니다.
+          </p>
+
+          <button
+            id="homeBtn"
+          >
+            메인으로
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  const correctAnswer = {
+    "마리아": "도",
+    "데레사": "레",
+    "벨라뎃다": "미"
+  };
+
+  let selectedName = null;
+  let answers = {};
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 4
+        </h1>
+
+        <p>
+          왼쪽 이름과 오른쪽 계이름을 알맞게 연결하세요
+        </p>
+
+        <div class="line-game">
+
+          <div class="line-list">
+            <button
+              class="match-btn left-match"
+              data-name="마리아"
+            >
+              마리아
+            </button>
+
+            <button
+              class="match-btn left-match"
+              data-name="데레사"
+            >
+              데레사
+            </button>
+
+            <button
+              class="match-btn left-match"
+              data-name="벨라뎃다"
+            >
+              벨라뎃다
+            </button>
+          </div>
+
+          <div class="line-list">
+            <button
+              class="match-btn right-match"
+              data-note="미"
+            >
+              미
+            </button>
+
+            <button
+              class="match-btn right-match"
+              data-note="레"
+            >
+              레
+            </button>
+
+            <button
+              class="match-btn right-match"
+              data-note="도"
+            >
+              도
+            </button>
+          </div>
+
+        </div>
+
+        <div
+          class="match-result"
+          id="matchResult"
+        ></div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.querySelectorAll(".left-match")
+    .forEach((btn) => {
+      btn.onclick = () => {
+        selectedName =
+          btn.dataset.name;
+
+        document.querySelectorAll(".left-match")
+          .forEach((b) => {
+            b.classList.remove("selected");
+          });
+
+        btn.classList.add("selected");
+      };
+    });
+
+  document.querySelectorAll(".right-match")
+    .forEach((btn) => {
+      btn.onclick = () => {
+        if (!selectedName) {
+          alert("먼저 왼쪽 이름을 선택하세요");
+          return;
+        }
+
+        const note =
+          btn.dataset.note;
+
+        answers[selectedName] =
+          note;
+
+        const leftBtn =
+          document.querySelector(
+            `[data-name="${selectedName}"]`
+          );
+
+        leftBtn.textContent =
+          `${selectedName} → ${note}`;
+
+        leftBtn.classList.remove("selected");
+
+        selectedName = null;
+
+        checkMission04();
+      };
+    });
+
+  function checkMission04() {
+    const names = [
+      "마리아",
+      "데레사",
+      "벨라뎃다"
+    ];
+
+    if (
+      names.every(
+        name => answers[name]
+      )
+    ) {
+      const isCorrect =
+        names.every(
+          name =>
+            answers[name] ===
+            correctAnswer[name]
+        );
+
+      if (isCorrect) {
+        completeMission("mission04");
+
+        document.getElementById("matchResult")
+          .innerHTML = `
+            <span class="success-text">
+              정답입니다! 미션 완료!
+            </span>
+          `;
+
+        setTimeout(() => {
+          renderHome();
+        }, 800);
+
+      } else {
+        document.getElementById("matchResult")
+          .innerHTML = `
+            <span class="fail-text">
+              틀렸습니다. 다시 연결해보세요.
+            </span>
+          `;
+
+        setTimeout(() => {
+          renderMission04();
+        }, 1000);
+      }
+    }
+  }
+
+  document.getElementById("homeBtn").onclick =
     renderHome;
 }
 
