@@ -804,7 +804,10 @@ function onScanSuccess(decodedText) {
     decodedText.trim();
 
 
-    if (qr === "gamgok_mission_fail") {
+   if (
+  qr === "gamgok_mission_fail" ||
+  qr === "gamgok_mission_fail_qr"
+) {
   renderFailQr();
   return;
 }
