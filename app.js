@@ -2312,7 +2312,7 @@ function renderMission09() {
 
 window.checkMission09 = function(answer) {
   if (answer === 1) {
-    completeMission(9);
+    completeMission("mission09");
   } else {
     alert("틀렸습니다!");
   }
@@ -2372,7 +2372,7 @@ window.checkMission10 = function() {
 
   if (userAnswer === correct) {
 
-    completeMission(10);
+    completeMission("mission10");
 
   } else {
 
@@ -2425,7 +2425,7 @@ window.checkMission11 = function() {
 
   if (correctAnswers.includes(answer)) {
 
-    completeMission(11);
+    completeMission("mission11");
 
   } else {
 
@@ -2436,7 +2436,7 @@ window.checkMission11 = function() {
 function renderMission12() {
   app.innerHTML = `
     <div class="mission-box">
-      <h2>미션 11</h2>
+      <h2>미션 12</h2>
 
       <p>
         성당 종탑에 시계가 있습니다.<br><br>
@@ -2445,11 +2445,11 @@ function renderMission12() {
       </p>
 
       <div class="quiz-options">
-        <button onclick="checkMission11(1)">1. 3시</button>
-        <button onclick="checkMission11(2)">2. 6시</button>
-        <button onclick="checkMission11(3)">3. 9시</button>
-        <button onclick="checkMission11(4)">4. 11시 55분</button>
-        <button onclick="checkMission11(5)">5. 12시</button>
+        <button onclick="checkMission12(1)">1. 3시</button>
+        <button onclick="checkMission12(2)">2. 6시</button>
+        <button onclick="checkMission12(3)">3. 9시</button>
+        <button onclick="checkMission12(4)">4. 11시 55분</button>
+        <button onclick="checkMission12(5)">5. 12시</button>
       </div>
     </div>
   `;
@@ -2457,7 +2457,7 @@ function renderMission12() {
 
 window.checkMission12 = function(answer) {
   if (answer === 5) {
-    completeMission(12);
+    completeMission("mission012");
   } else {
     alert("틀렸습니다!");
   }
@@ -2525,7 +2525,7 @@ window.checkMission13 = function() {
 
   if (answer === "3854") {
 
-    completeMission(13);
+    completeMission("mission13");
 
   } else {
 
@@ -2533,7 +2533,77 @@ window.checkMission13 = function() {
   }
 };
 
-여기 위에 문제 추가하면 됨
+
+function renderMission14() {
+
+  const words = [
+    "전부터",
+    "사랑했습니다",
+    "나는",
+    "만나기",
+    "여러분을"
+  ];
+
+  app.innerHTML = `
+    <div class="mission-box">
+      <h2>미션 14</h2>
+
+      <p>
+        임 가밀로 신부님 동상 아래 적힌<br>
+        신부님의 말씀을 순서대로 나열하세요.
+      </p>
+
+      <div id="word-bank" class="word-bank">
+        ${words.map(word => `
+          <button class="word-btn" onclick="selectMission14Word('${word}')">
+            ${word}
+          </button>
+        `).join("")}
+      </div>
+
+      <h3>배열한 답</h3>
+
+      <div id="mission14-answer" class="answer-area"></div>
+
+      <button class="submit-btn" onclick="checkMission14()">
+        정답 확인
+      </button>
+    </div>
+  `;
+}
+
+let mission14Answer = [];
+
+window.selectMission14Word = function(word) {
+
+  mission14Answer.push(word);
+
+  document.getElementById("mission14-answer").innerHTML =
+    mission14Answer.map(w => `
+      <span class="answer-word">${w}</span>
+    `).join("");
+};
+
+window.checkMission14 = function() {
+
+  const correct =
+    "나는여러분을만나기전부터사랑했습니다";
+
+  const userAnswer =
+    mission14Answer.join("");
+
+  if (userAnswer === correct) {
+
+    completeMission("mission14");
+
+  } else {
+
+    alert("순서가 틀렸습니다!");
+  }
+};
+
+
+//여기 위에 문제 추가하면 됨
 function fillSelect(id, start, end, selectedValue) {
   const select =
     document.getElementById(id);
