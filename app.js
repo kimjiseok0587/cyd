@@ -34,6 +34,11 @@ const MISSIONS = {
   mission04: {
     title: "미션 4",
     qr: "gamgok_mission_04"
+  },
+
+  mission05: {
+    title: "미션 5",
+    qr: "gamgok_mission_05"
   }
 };
 
@@ -713,6 +718,11 @@ function onScanSuccess(decodedText) {
     return;
   }
 
+  if (qr === "gamgok_mission_05") {
+    renderMission05();
+    return;
+  }
+
   try {
     const url = new URL(qr);
     const mission = url.searchParams.get("mission");
@@ -729,6 +739,11 @@ function onScanSuccess(decodedText) {
 
     if (mission === "4") {
       renderMission04();
+      return;
+    }
+
+    if (mission === "5") {
+      renderMission05();
       return;
     }
   } catch (e) {}
@@ -1455,6 +1470,162 @@ function renderMission04() {
       }
     }
   }
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+function renderMission05() {
+  if (
+    completedMissions.includes(
+      "mission05"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+
+        <div class="card">
+
+          <h1>
+            미션 5 완료
+          </h1>
+
+          <p>
+            이미 완료한 미션입니다.
+          </p>
+
+          <button
+            id="homeBtn"
+          >
+            메인으로
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 5
+        </h1>
+
+        <p style="font-weight:700;">
+          다음 중 전대사에 대한 설명으로 틀린 것을 고르세요.
+        </p>
+
+        <div
+          style="
+            display:grid;
+            gap:12px;
+            margin-top:24px;
+          "
+        >
+
+          <button
+            class="match-btn answer-btn"
+            data-answer="1"
+          >
+            1. 전대사는 죄로 인한 잠벌을 면해 주는 것이다.
+          </button>
+
+          <button
+            class="match-btn answer-btn"
+            data-answer="2"
+          >
+            2. 전대사는 세례받은 본인이 받을 수 있다.
+          </button>
+
+          <button
+            class="match-btn answer-btn"
+            data-answer="3"
+          >
+            3. 전대사는 죽은 연옥 영혼을 위해 양도할 수 있다.
+          </button>
+
+          <button
+            class="match-btn answer-btn"
+            data-answer="4"
+          >
+            4. 전대사는 죄 자체를 없애기 때문에 고해성사가 필요 없다.
+          </button>
+
+        </div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:20px;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.querySelectorAll(".answer-btn")
+    .forEach((btn) => {
+
+      btn.onclick = () => {
+
+        const answer =
+          btn.dataset.answer;
+
+        if (answer === "4") {
+
+          completeMission(
+            "mission05"
+          );
+
+          app.innerHTML = `
+            <div class="page">
+
+              <div class="card">
+
+                <h1>
+                  미션 완료!
+                </h1>
+
+                <p>
+                  정답입니다!
+                </p>
+
+                <button
+                  id="homeBtn"
+                >
+                  메인으로
+                </button>
+
+              </div>
+
+            </div>
+          `;
+
+          document.getElementById(
+            "homeBtn"
+          ).onclick =
+            renderHome;
+
+        } else {
+
+          alert(
+            "틀렸습니다. 다시 생각해보세요."
+          );
+        }
+      };
+    });
 
   document.getElementById("homeBtn").onclick =
     renderHome;
