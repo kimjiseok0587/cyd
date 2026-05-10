@@ -609,7 +609,7 @@ function renderHome() {
         </div>
 
         <div class="sub-title">
-          감곡성당 청소년대회
+          청주교구 음성지구 CYD
         </div>
 
         <div class="user-box">
