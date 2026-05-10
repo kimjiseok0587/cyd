@@ -24,8 +24,21 @@ const MISSIONS = {
   mission02: {
     title: "미션 2",
     qr: "gamgok_mission_02"
+  },
+
+  mission03: {
+    title: "미션 3",
+    qr: "gamgok_mission_03"
   }
 };
+
+const mission3Answers = [
+  { x: 0.08, y: 0.16, r: 0.06 },
+  { x: 0.54, y: 0.31, r: 0.05 },
+  { x: 0.65, y: 0.48, r: 0.06 },
+  { x: 0.89, y: 0.82, r: 0.08 },
+  { x: 0.90, y: 0.13, r: 0.06 }
+];
 
 function getUserId() {
   if (!currentUser) return null;
@@ -316,6 +329,37 @@ function injectStyle() {
         margin-top: 15px;
         background: #999;
         color: white;
+      }
+
+      .mission3-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 390px;
+        margin: 18px auto;
+      }
+
+      .mission3-img {
+        width: 100%;
+        display: block;
+        border-radius: 16px;
+      }
+
+      .answer-dot {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border: 4px solid red;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        box-sizing: border-box;
+      }
+
+      .found-count {
+        margin-top: 12px;
+        font-size: 20px;
+        font-weight: 900;
+        text-align: center;
       }
 
     </style>
@@ -616,12 +660,22 @@ function onScanSuccess(decodedText) {
     return;
   }
 
+  if (qr === "gamgok_mission_03") {
+    renderMission03();
+    return;
+  }
+
   try {
     const url = new URL(qr);
     const mission = url.searchParams.get("mission");
 
     if (mission === "2") {
       renderMission02();
+      return;
+    }
+
+    if (mission === "3") {
+      renderMission03();
       return;
     }
   } catch (e) {}
@@ -934,6 +988,195 @@ function renderMission02() {
         "다시 생각해보세요"
       );
     }
+  };
+
+  document.getElementById(
+    "homeBtn"
+  ).onclick =
+    renderHome;
+}
+
+function renderMission03() {
+  if (
+    completedMissions.includes(
+      "mission03"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+
+        <div class="card">
+
+          <h1>
+            미션 3 완료
+          </h1>
+
+          <p>
+            틀린그림 찾기를 완료했습니다.
+          </p>
+
+          <img
+            src="./mission3_wrong.png"
+            class="complete-img"
+          />
+
+          <button
+            id="homeBtn"
+          >
+            메인으로
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  let found = [];
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 3
+        </h1>
+
+        <p>
+          틀린 곳 5군데를 찾아 누르세요
+        </p>
+
+        <div
+          class="mission3-wrap"
+          id="mission3Wrap"
+        >
+          <img
+            src="./mission3_wrong.png"
+            class="mission3-img"
+            id="mission3Img"
+          />
+        </div>
+
+        <div
+          class="found-count"
+          id="foundCount"
+        >
+          0 / 5
+        </div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  const wrap =
+    document.getElementById("mission3Wrap");
+
+  const img =
+    document.getElementById("mission3Img");
+
+  const foundCount =
+    document.getElementById("foundCount");
+
+  img.onclick = (event) => {
+    const rect =
+      img.getBoundingClientRect();
+
+    const x =
+      (event.clientX - rect.left) / rect.width;
+
+    const y =
+      (event.clientY - rect.top) / rect.height;
+
+    mission3Answers.forEach(
+      (answer, index) => {
+        if (found.includes(index)) return;
+
+        const dx =
+          x - answer.x;
+
+        const dy =
+          y - answer.y;
+
+        const distance =
+          Math.sqrt(dx * dx + dy * dy);
+
+        if (distance <= answer.r) {
+          found.push(index);
+
+          const dot =
+            document.createElement("div");
+
+          dot.className =
+            "answer-dot";
+
+          dot.style.left =
+            `${answer.x * 100}%`;
+
+          dot.style.top =
+            `${answer.y * 100}%`;
+
+          wrap.appendChild(dot);
+
+          foundCount.textContent =
+            `${found.length} / 5`;
+
+          if (found.length === 5) {
+            completeMission("mission03");
+
+            setTimeout(() => {
+              app.innerHTML = `
+                <div class="page">
+
+                  <div class="card">
+
+                    <h1>
+                      미션 완료!
+                    </h1>
+
+                    <p>
+                      틀린 곳 5군데를 모두 찾았습니다.
+                    </p>
+
+                    <img
+                      src="./mission3_wrong.png"
+                      class="complete-img"
+                    />
+
+                    <button
+                      id="homeBtn"
+                    >
+                      메인으로
+                    </button>
+
+                  </div>
+
+                </div>
+              `;
+
+              document.getElementById(
+                "homeBtn"
+              ).onclick =
+                renderHome;
+
+            }, 500);
+          }
+        }
+      }
+    );
   };
 
   document.getElementById(
