@@ -1028,7 +1028,7 @@ function renderPuzzleMission() {
         <div class="card">
 
           <h1>
-            미션 1 완료
+            미션 완료
           </h1>
 
           <img
@@ -1217,9 +1217,7 @@ function renderMission02() {
 
       <div class="card">
 
-        <h1>
-          미션 2
-        </h1>
+    
 
         <p>
           빈칸을 채우세요
@@ -1334,7 +1332,7 @@ function renderMission03() {
         <div class="card">
 
           <h1>
-            미션 3 완료
+            미션 완료
           </h1>
 
           <p>
@@ -1370,9 +1368,7 @@ function renderMission03() {
 
       <div class="card">
 
-        <h1>
-          미션 3
-        </h1>
+     
 
         <p>
           틀린 곳 5군데를 찾아 누르세요
@@ -1523,7 +1519,7 @@ function renderMission04() {
         <div class="card">
 
           <h1>
-            미션 4 완료
+            미션 완료
           </h1>
 
           <p>
@@ -1561,9 +1557,7 @@ function renderMission04() {
 
       <div class="card">
 
-        <h1>
-          미션 4
-        </h1>
+    
 
         <p>
           왼쪽 이름과 오른쪽 계이름을 알맞게 연결하세요
@@ -1745,7 +1739,7 @@ function renderMission05() {
         <div class="card">
 
           <h1>
-            미션 5 완료
+            미션 완료
           </h1>
 
           <p>
@@ -1774,9 +1768,7 @@ function renderMission05() {
 
       <div class="card">
 
-        <h1>
-          미션 5
-        </h1>
+
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           감곡성당과 매괴장미 안내판을 읽고,<br>
@@ -1877,7 +1869,7 @@ function renderMission06() {
         <div class="card">
 
           <h1>
-            미션 6 완료
+            미션 완료
           </h1>
 
           <p>
@@ -1906,9 +1898,7 @@ function renderMission06() {
 
       <div class="card">
 
-        <h1>
-          미션 6
-        </h1>
+
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           임가밀로 신부님이 태어나신 날과<br>
@@ -2056,7 +2046,7 @@ function renderMission07() {
         <div class="card">
 
           <h1>
-            미션 7 완료
+            미션 완료
           </h1>
 
           <p>
@@ -2082,9 +2072,7 @@ function renderMission07() {
 
       <div class="card">
 
-        <h1>
-          미션 7
-        </h1>
+    
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           임가밀로 신부님의 소속은 어디였나요?
@@ -2175,7 +2163,7 @@ function renderMission08() {
         <div class="card">
 
           <h1>
-            미션 8 완료
+            미션 완료
           </h1>
 
           <p>
@@ -2201,9 +2189,7 @@ function renderMission08() {
 
       <div class="card">
 
-        <h1>
-          미션 8
-        </h1>
+   
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           감곡성당에는 김대건 신부님의 유해가 있습니다.<br>
@@ -2296,9 +2282,7 @@ function renderMission09() {
 
       <div class="card">
 
-        <h1>
-          미션 9
-        </h1>
+     
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           임 가밀로 신부님이 태어나신 곳은 어디인가요?
@@ -2670,9 +2654,7 @@ function renderMission15() {
     <div class="page">
       <div class="card">
 
-        <h1>
-          미션 15
-        </h1>
+    
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           다음 중 전대사에 대한 설명으로 틀린 것은 무엇인가요?
@@ -2732,9 +2714,7 @@ function renderMission16() {
     <div class="page">
       <div class="card">
 
-        <h1>
-          미션 16
-        </h1>
+        
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           매년 10월 첫째 주에 성체대회를 하는데,<br><br>
@@ -2823,7 +2803,7 @@ function renderMission17() {
         <div class="card">
 
           <h1>
-            미션 17 완료
+            미션 완료
           </h1>
 
           <p>
@@ -2849,9 +2829,7 @@ function renderMission17() {
 
       <div class="card">
 
-        <h1>
-          미션 17
-        </h1>
+       
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           1958년 충청북도 감곡대리구에서<br>
@@ -2942,7 +2920,7 @@ function renderMission18() {
         <div class="card">
 
           <h1>
-            미션 18 완료
+            미션 완료
           </h1>
 
           <p>
@@ -2968,9 +2946,7 @@ function renderMission18() {
 
       <div class="card">
 
-        <h1>
-          미션 18
-        </h1>
+    
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           성모광장은 일제시대 일본인들이<br>
@@ -3067,7 +3043,7 @@ function renderMission19() {
         <div class="card">
 
           <h1>
-            미션 19 완료
+            미션 완료
           </h1>
 
           <p>
@@ -3105,9 +3081,7 @@ function renderMission19() {
 
       <div class="card">
 
-        <h1>
-          미션 19
-        </h1>
+    
 
         <p style="font-weight:700; font-size:20px; line-height:1.5;">
           감곡성당의 성모동굴은<br>
@@ -3274,7 +3248,7 @@ function renderMission20() {
         <div class="card">
 
           <h1>
-            미션 20 완료
+            미션 완료
           </h1>
 
           <p>
@@ -3300,9 +3274,7 @@ function renderMission20() {
 
       <div class="card">
 
-        <h1>
-          미션 20
-        </h1>
+    
 
         <p style="font-weight:700; font-size:20px; line-height:1.7;">
           “고생하며 무거운 짐을 진 너희는 모두
