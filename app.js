@@ -45,6 +45,76 @@ const MISSIONS = {
     title: "미션 6",
     qr: "gamgok_mission_06"
   }
+
+  mission07: {
+  title: "미션 7",
+  qr: "gamgok_mission_07"
+},
+
+mission08: {
+  title: "미션 8",
+  qr: "gamgok_mission_08"
+},
+
+mission09: {
+  title: "미션 9",
+  qr: "gamgok_mission_09"
+},
+
+mission10: {
+  title: "미션 10",
+  qr: "gamgok_mission_10"
+},
+
+mission11: {
+  title: "미션 11",
+  qr: "gamgok_mission_11"
+},
+
+mission12: {
+  title: "미션 12",
+  qr: "gamgok_mission_12"
+},
+
+mission13: {
+  title: "미션 13",
+  qr: "gamgok_mission_13"
+},
+
+mission14: {
+  title: "미션 14",
+  qr: "gamgok_mission_14"
+},
+
+mission15: {
+  title: "미션 15",
+  qr: "gamgok_mission_15"
+},
+
+mission16: {
+  title: "미션 16",
+  qr: "gamgok_mission_16"
+},
+
+mission17: {
+  title: "미션 17",
+  qr: "gamgok_mission_17"
+},
+
+mission18: {
+  title: "미션 18",
+  qr: "gamgok_mission_18"
+},
+
+mission19: {
+  title: "미션 19",
+  qr: "gamgok_mission_19"
+},
+
+mission20: {
+  title: "미션 20",
+  qr: "gamgok_mission_20"
+}
 };
 
 const mission3Answers = [
