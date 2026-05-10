@@ -44,7 +44,7 @@ const MISSIONS = {
   mission06: {
     title: "미션 6",
     qr: "gamgok_mission_06"
-  }
+  },
 
   mission07: {
   title: "미션 7",
@@ -832,6 +832,11 @@ function onScanSuccess(decodedText) {
     renderMission06();
     return;
   }
+
+  if (qr === "gamgok_mission_07") {
+  renderMission07();
+  return;
+}
 
   try {
     const url = new URL(qr);
@@ -1906,6 +1911,125 @@ function renderMission06() {
   document.getElementById("homeBtn").onclick =
     renderHome;
 }
+
+function renderMission07() {
+  if (
+    completedMissions.includes(
+      "mission07"
+    )
+  ) {
+    app.innerHTML = `
+      <div class="page">
+        <div class="card">
+
+          <h1>
+            미션 7 완료
+          </h1>
+
+          <p>
+            이미 완료한 미션입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="page">
+
+      <div class="card">
+
+        <h1>
+          미션 7
+        </h1>
+
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          임가밀로 신부님의 소속은 어디였나요?
+        </p>
+
+        <div class="main-buttons">
+
+          <button onclick="checkMission07(1)">
+            1. 메리놀회
+          </button>
+
+          <button onclick="checkMission07(2)">
+            2. 파리 외방 전교회
+          </button>
+
+          <button onclick="checkMission07(3)">
+            3. 골롬반회
+          </button>
+
+          <button onclick="checkMission07(4)">
+            4. 프란치스코전교봉사수도회
+          </button>
+
+        </div>
+
+        <button
+          class="back-btn"
+          id="homeBtn"
+          style="margin-top:14px;width:100%;"
+        >
+          메인으로
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
+
+window.checkMission07 = function(choice) {
+
+  if (choice === 2) {
+
+    completeMission("mission07");
+
+    app.innerHTML = `
+      <div class="page">
+
+        <div class="card">
+
+          <h1>
+            미션 완료!
+          </h1>
+
+          <p>
+            정답입니다!<br>
+            임가밀로 신부님은 파리 외방 전교회 소속입니다.
+          </p>
+
+          <button id="homeBtn">
+            메인으로
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.getElementById("homeBtn").onclick =
+      renderHome;
+
+  } else {
+    alert("틀렸습니다. 다시 선택해보세요.");
+  }
+};
 
 function fillSelect(id, start, end, selectedValue) {
   const select =
