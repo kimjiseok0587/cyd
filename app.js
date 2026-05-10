@@ -2283,42 +2283,18 @@ function renderMission08() {
     renderHome;
 }
 
-function renderMission09() {
-  app.innerHTML = `
-    <div class="mission-box">
-      <h2>미션 9</h2>
-      <p>임 가밀로 신부님이 태어나신 곳은 어디인가요?</p>
-
-      <div class="quiz-options">
-        <button onclick="checkMission09(1)">
-          1. 프랑스 타르브교구 빌레아두르
-        </button>
-
-        <button onclick="checkMission09(2)">
-          2. 이탈리아 로마
-        </button>
-
-        <button onclick="checkMission09(3)">
-          3. 독일 베를린
-        </button>
-
-        <button onclick="checkMission09(4)">
-          4. 중국 상하이
-        </button>
-      </div>
-    </div>
-  `;
-}
-
 window.checkMission09 = function(answer) {
   if (answer === 1) {
     completeMission("mission09");
+    showMissionComplete();
   } else {
     alert("틀렸습니다!");
   }
 };
 
 function renderMission10() {
+
+  mission10Answer = [];
 
   const words = ["성당", "감곡", "순례지", "매괴", "성모"];
 
@@ -2371,11 +2347,9 @@ window.checkMission10 = function() {
     mission10Answer.join("");
 
   if (userAnswer === correct) {
-
     completeMission("mission10");
-
+    showMissionComplete();
   } else {
-
     alert("순서가 틀렸습니다!");
   }
 };
@@ -2424,11 +2398,9 @@ window.checkMission11 = function() {
   ];
 
   if (correctAnswers.includes(answer)) {
-
     completeMission("mission11");
-
+    showMissionComplete();
   } else {
-
     alert("틀렸습니다!");
   }
 };
@@ -2458,6 +2430,7 @@ function renderMission12() {
 window.checkMission12 = function(answer) {
   if (answer === 5) {
     completeMission("mission12");
+    showMissionComplete();
   } else {
     alert("틀렸습니다!");
   }
@@ -2524,17 +2497,16 @@ window.checkMission13 = function() {
     document.getElementById("digit4").value;
 
   if (answer === "3854") {
-
     completeMission("mission13");
-
+    showMissionComplete();
   } else {
-
     alert("틀렸습니다!");
   }
 };
 
-
 function renderMission14() {
+
+  mission14Answer = [];
 
   const words = [
     "전부터",
@@ -2593,15 +2565,33 @@ window.checkMission14 = function() {
     mission14Answer.join("");
 
   if (userAnswer === correct) {
-
     completeMission("mission14");
-
+    showMissionComplete();
   } else {
-
     alert("순서가 틀렸습니다!");
   }
 };
 
+function showMissionComplete() {
+  app.innerHTML = `
+    <div class="page">
+      <div class="card">
+        <h1>미션 완료!</h1>
+
+        <p>
+          정답입니다.
+        </p>
+
+        <button id="homeBtn">
+          메인으로
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("homeBtn").onclick =
+    renderHome;
+}
 
 //여기 위에 문제 추가하면 됨
 function fillSelect(id, start, end, selectedValue) {
