@@ -727,6 +727,11 @@ function onScanSuccess(decodedText) {
     const url = new URL(qr);
     const mission = url.searchParams.get("mission");
 
+    if (mission === "1") {
+      renderPuzzleMission();
+      return;
+    }
+
     if (mission === "2") {
       renderMission02();
       return;
@@ -1520,52 +1525,39 @@ function renderMission05() {
           미션 5
         </h1>
 
-        <p style="font-weight:700;">
-          다음 중 전대사에 대한 설명으로 틀린 것을 고르세요.
+        <p style="font-weight:700; font-size:20px; line-height:1.5;">
+          감곡성당과 매괴장미 안내판을 읽고,<br>
+          안내판에 <b>"매"</b>가 몇 번 들어가나요?
         </p>
 
-        <div
+        <input
+          id="mission05Answer"
+          type="number"
+          placeholder="숫자만 입력하세요"
           style="
-            display:grid;
-            gap:12px;
-            margin-top:24px;
+            margin-top:20px;
+            text-align:center;
+            font-size:24px;
+            font-weight:800;
+          "
+        />
+
+        <button
+          id="mission05SubmitBtn"
+          style="
+            margin-top:18px;
+            width:100%;
+            background:#5a351b;
+            color:white;
           "
         >
-
-          <button
-            class="match-btn answer-btn"
-            data-answer="1"
-          >
-            1. 전대사는 죄로 인한 잠벌을 면해 주는 것이다.
-          </button>
-
-          <button
-            class="match-btn answer-btn"
-            data-answer="2"
-          >
-            2. 전대사는 세례받은 본인이 받을 수 있다.
-          </button>
-
-          <button
-            class="match-btn answer-btn"
-            data-answer="3"
-          >
-            3. 전대사는 죽은 연옥 영혼을 위해 양도할 수 있다.
-          </button>
-
-          <button
-            class="match-btn answer-btn"
-            data-answer="4"
-          >
-            4. 전대사는 죄 자체를 없애기 때문에 고해성사가 필요 없다.
-          </button>
-
-        </div>
+          정답 확인
+        </button>
 
         <button
           class="back-btn"
           id="homeBtn"
-          style="margin-top:20px;"
+          style="margin-top:14px;width:100%;"
         >
           메인으로
         </button>
@@ -1575,57 +1567,46 @@ function renderMission05() {
     </div>
   `;
 
-  document.querySelectorAll(".answer-btn")
-    .forEach((btn) => {
+  document.getElementById("mission05SubmitBtn").onclick = () => {
+    const answer =
+      document.getElementById("mission05Answer")
+      .value
+      .trim();
 
-      btn.onclick = () => {
+    if (answer === "11") {
+      completeMission("mission05");
 
-        const answer =
-          btn.dataset.answer;
+      app.innerHTML = `
+        <div class="page">
 
-        if (answer === "4") {
+          <div class="card">
 
-          completeMission(
-            "mission05"
-          );
+            <h1>
+              미션 완료!
+            </h1>
 
-          app.innerHTML = `
-            <div class="page">
+            <p>
+              정답입니다! 안내판의 "매"는 총 11번 들어갑니다.
+            </p>
 
-              <div class="card">
+            <button
+              id="homeBtn"
+            >
+              메인으로
+            </button>
 
-                <h1>
-                  미션 완료!
-                </h1>
+          </div>
 
-                <p>
-                  정답입니다!
-                </p>
+        </div>
+      `;
 
-                <button
-                  id="homeBtn"
-                >
-                  메인으로
-                </button>
+      document.getElementById("homeBtn").onclick =
+        renderHome;
 
-              </div>
-
-            </div>
-          `;
-
-          document.getElementById(
-            "homeBtn"
-          ).onclick =
-            renderHome;
-
-        } else {
-
-          alert(
-            "틀렸습니다. 다시 생각해보세요."
-          );
-        }
-      };
-    });
+    } else {
+      alert("틀렸습니다. 다시 안내판을 잘 읽어보세요.");
+    }
+  };
 
   document.getElementById("homeBtn").onclick =
     renderHome;
