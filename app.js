@@ -751,6 +751,16 @@ function renderMap() {
 
         <h1>지도 보기</h1>
 
+        <p class="map-text">
+  장미꽃 위치를 찾아가면 QR코드가 있어요 🌹
+</p>
+
+<img
+  src="./map.png"
+  alt="지도"
+  class="map-image"
+/>
+
      <img
   src="./map.png"
   alt="지도"
