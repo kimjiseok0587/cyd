@@ -295,3 +295,12 @@ input:focus {
   border: 2px solid #8b5e34;
   margin: 20px 0;
 }
+
+.map-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #8b5e34;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
