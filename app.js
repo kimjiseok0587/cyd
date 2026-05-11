@@ -641,7 +641,7 @@ function renderHome() {
 
     return;
   }
-  
+
   app.innerHTML = `
     <div class="page">
 
@@ -751,9 +751,11 @@ function renderMap() {
 
         <h1>지도 보기</h1>
 
-        <div class="map-box">
-          🗺️ 지도 이미지
-        </div>
+     <img
+  src="./map.png"
+  alt="지도"
+  class="map-image"
+/>
 
         <button
           class="back-btn"
